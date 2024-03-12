@@ -1,23 +1,37 @@
 import ifcopenshell
+import ifcopenshell.geom
+import ifcopenshell.util.shape
 import math
+import numpy as np
+import ifcopenshell.util.element
 
-def get_storey_heights(ifc_file_path):
+settings = ifcopenshell.geom.settings()
+
+def extract_storey_info(ifc_file):
     # Open the IFC file
-    ifc_file = ifcopenshell.open(ifc_file_path)
+    ifc_file = ifcopenshell.open(ifc_file)
 
-    # Get all IfcBuildingStorey instances from the IFC file
-    storeys = ifc_file.by_type('IfcBuildingStorey')
+    # Get all IfcBuildingStorey instances
+    storeys = ifc_file.by_type("IfcBuildingStorey")
 
-    storey_heights = {}
+    # Sort the storeys by elevation
+    storeys.sort(key=lambda x: x.Elevation)
 
-    # Iterate over each IfcBuildingStorey instance
-    for storey in storeys:
-        # Retrieve the storey height
-        if hasattr(storey, 'Elevation'):
-            elevation = storey.Elevation
-            storey_heights[storey] = elevation
+    storey_heights = []
 
+    # Iterate over each storey and extract information
+    for i in range(len(storeys)-1):
+        current_storey = storeys[i]
+        next_storey = storeys[i+1]
+
+        storey_name = current_storey.Name if hasattr(current_storey, "Name") else "N/A"
+        storey_height = next_storey.Elevation - current_storey.Elevation
+
+        print(f"Storey Name: {storey_name}, Storey Height: {storey_height}")
+        storey_heights.append(storey_height)
+    
     return storey_heights
+
 
 def get_storey_name(storey):
     # Retrieve the name of the storey
@@ -26,41 +40,94 @@ def get_storey_name(storey):
     else:
         return "Unnamed"
 
-def check_walls_in_storeys(ifc_file_path):
+
+def calculate_bounding_box_height(wall):
+
+    geom = wall.Representation.Representations[0].Items[0]
+    #return ifcopenshell.util.shape.get_z(geom)
+    
+
+    if geom.is_a("IfcExtrudedAreaSolid"):
+        #print (geom.Depth)
+        return (geom.Depth)
+
+    #TODO: find solution if it is a Boolean Clipping result
+
+
+
+
+
+def check_wall_heights(ifc_file):
     # Open the IFC file
-    ifc_file = ifcopenshell.open(ifc_file_path)
+    ifc_file = ifcopenshell.open(ifc_file)
 
-    # Get all IfcBuildingStorey instances from the IFC file
-    storeys = ifc_file.by_type('IfcBuildingStorey')
+    walls_with_major_issues = 0
+    walls_with_minor_issues = 0
 
-    # Initialize a dictionary to store walls in each storey
-    walls_in_storeys = {storey: [] for storey in storeys}
+    # Get all IfcWall instances
+    walls = ifc_file.by_type("IfcWall")
 
-    # Get all IfcWall instances from the IFC file
-    walls = ifc_file.by_type('IfcWall')
+    # Get all IfcBuildingStorey instances
+    storeys = ifc_file.by_type("IfcBuildingStorey")
 
-    # Iterate over each IfcWall instance
+    # Sort the storeys by elevation
+    storeys.sort(key=lambda x: x.ObjectPlacement.RelativePlacement.Location.Coordinates[2])
+
+    # Initialize a flag to track if all walls are shorter than corresponding storey heights
+    all_walls_shorter = True
+
+    # Iterate over each wall and compare its height with the corresponding storey height
     for wall in walls:
-        # Find the storey associated with the wall
+        wall_height = ifcopenshell.util.element.get_psets(wall).get("Height")
+        if wall_height is None:
+            # If wall height is not found, use bounding box height
+            # wall_height = get_bounding_box_height(wall)
+            wall_height = calculate_bounding_box_height(wall)
+            if wall_height is None:
+                print(f"Warning: Wall {wall.GlobalId} height not found.")
+                walls_with_major_issues += 1
+                continue
+
+        # Find the corresponding storey
         storey = None
-        if hasattr(wall, 'ContainedInStructure'):
-            for rel in wall.ContainedInStructure:
-                if hasattr(rel, 'RelatingStructure') and isinstance(rel.RelatingStructure, ifcopenshell.entity_instance('IfcBuildingStorey')):
-                    storey = rel.RelatingStructure
-                    break
+        for current_storey, next_storey in zip(storeys, storeys[1:]):
+            if current_storey.ObjectPlacement.RelativePlacement.Location.Coordinates[2] <= wall.ObjectPlacement.RelativePlacement.Location.Coordinates[2] < next_storey.ObjectPlacement.RelativePlacement.Location.Coordinates[2]:
+                storey = current_storey
+                break
 
-        if storey:
-            # Add the wall to the appropriate storey
-            walls_in_storeys[storey].append(wall)
+        if storey is None:
+            print(f"Warning: Could not find corresponding storey for wall {wall}")
+            walls_with_major_issues += 1
+            continue
 
-    # Check if walls in each storey exceed the storey height
-    for storey, walls in walls_in_storeys.items():
-        storey_name = get_storey_name(storey)
-        if storey in storey_heights:
-            storey_height = storey_heights[storey]
-            for wall in walls:
-                if hasattr(wall, 'OverallHeight') and wall.OverallHeight > storey_height:
-                    print(f"Wall ID {wall.GlobalId} in storey '{storey_name}' exceeds storey height")
+        storey_height = next_storey.ObjectPlacement.RelativePlacement.Location.Coordinates[2] - current_storey.ObjectPlacement.RelativePlacement.Location.Coordinates[2]
+
+        if wall_height > storey_height:
+            #print(f"Wall {wall.GlobalId} is taller than or equal to the corresponding storey height.")
+            print (f"Wall {wall.GlobalId} is {wall_height} meters tall")
+            all_walls_shorter = False
+            walls_with_minor_issues +=1
+
+    if all_walls_shorter:
+        print("All walls are shorter than or equal to the corresponding storey heights.")
+    else:
+        print("Not all walls are shorter than or equal to the corresponding storey heights.")
+
+    print (f"Number of Walls in file = {len(walls)}")
+    print (f"Number of Walls with major issues = {walls_with_major_issues}")
+    print (f"Number of Walls with minor issues ={walls_with_minor_issues}")
+
+
+# You would need to implement the calculate_bounding_box_height function
+# according to your specific requirements.
+# def calculate_bounding_box_height(wall):
+#     pass
+
+
+
+
+
+
 
 
 def are_walls_vertical(ifc_file_path, tolerance=1e-5):
