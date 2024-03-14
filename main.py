@@ -2,10 +2,10 @@ import ifcopenshell
 import functions as qc
 
 
-#ifc_file_path = 'models/rac_advanced_sample_project.ifc'
+ifc_file_path = 'models/rac_advanced_sample_project.ifc'
 #ifc_file_path = 'models\AC2Ø-Institute-Var-2.ifc'
 #ifc_file_path = 'models\House.ifc'
-ifc_file_path = 'models\example project location.ifc'
+#ifc_file_path = 'models\example project location.ifc'
 
 ifc = ifcopenshell.open(ifc_file_path)
 
