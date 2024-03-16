@@ -41,12 +41,28 @@ def main():
 
         st.header(f"Walls with No Issues : {len(walls_ok)}")
 
+        st.divider()
+
+        non_vertical_walls = qc.are_walls_vertical(ifc)
+        st.header(f"Wall Verticality + Wall Modelling Issues : {len(non_vertical_walls)}")
+        table3_data = pd.DataFrame(data=non_vertical_walls, columns=['IDs', 'Type', 'Issues'])
+        st.table(table3_data)
+        st.divider()
+
+        #print (has_repeating_elements(walls_ok))
+        #print (has_repeating_elements(walls))
+        #print (has_repeating_elements(walls_major))
+        #print (has_repeating_elements(walls_minor))
+
+
+
         # Download button for exporting data as Excel
         def download_excel():
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer) as writer:
                 table1_data.to_excel(writer, sheet_name='Walls with Major Issues', index=False)
                 table2_data.to_excel(writer, sheet_name='Walls with Minor Issues', index=False)
+                table3_data.to_excel(writer, sheet_name='Wall Verticality + Modelling', index=False)
             
             #TODO: write to server if needed
             #with open("wall_data.xlsx", "rb") as f:
@@ -60,7 +76,18 @@ def main():
         
         st.download_button(label="Download Excel", data=download_excel(), file_name="wall_data.xlsx", mime="application/octet-stream")
         
+def has_repeating_elements(list_of_lists):
+    flattened_list = [item for sublist in list_of_lists for item in sublist]
+    unique_items = set()
+    conflicting_items = []
 
+    for item in flattened_list:
+        if item in unique_items:
+            conflicting_items.append(item)
+        else:
+            unique_items.add(item)
+
+    return conflicting_items
 
 
 if __name__ == "__main__":

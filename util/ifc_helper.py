@@ -74,28 +74,6 @@ def get_project_units(ifc_file):
 
 
 
-def are_walls_vertical(ifc_file, tolerance=1e-5):
-
-    # Get all IfcWall instances from the IFC file
-    walls = ifc_file.by_type('IfcWall')
-    
-    non_vertical_walls = []
-
-    # Iterate over each IfcWall instance
-    for wall in walls:
-        #print (wall)
-        #print(wall.Representation.Representations)
-        #print(wall.Representation.Representations[2].Items[0])
-        # Retrieve the orientation of the wall
-        """if hasattr(wall, 'Axis'):
-            axis = wall.Axis
-
-            # Check if the wall is vertical (axis direction is close to vertical)
-            if not math.isclose(axis[0], 0.0, abs_tol=tolerance) or not math.isclose(axis[1], 0.0, abs_tol=tolerance):
-                non_vertical_walls.append(wall.GlobalId)"""
-
-    return non_vertical_walls
-
 #TODO: find solution if it is a Boolean Clipping result
 def get_bounding_box_height(element,schema):
 
@@ -110,31 +88,80 @@ def get_bounding_box_height(element,schema):
         if geom_item.is_a('IfcShapeRepresentation') and shape:
             representation_type = geom_item.RepresentationType
             #print (representation_type)
-            if representation_type == 'BoundingBox':
-                return shape.ZDim
-            elif representation_type == 'SweptSolid':
-                return shape.Depth
-            elif representation_type == 'Clipping':
-                if (schema =="IFC2X3"):
-                    return shape.FirstOperand.Depth
-                else:
-                    print(shape.FirstOperand)
+            match representation_type:
+                case 'BoundingBox':
+                    return shape.ZDim
+                case 'SweptSolid':
+                    return shape.Depth
+                case 'Clipping':
+                    if (schema =="IFC2X3"):
+                        return shape.FirstOperand.Depth
+                    else:
+                        print(shape.FirstOperand)
+                        continue
+                case 'Brep':
+                    return get_brep_height(shape)
+                case _:
+                    #print (f"EXTRA PROBLEM - {shape}")
                     continue
-            elif representation_type == 'Curve2D':
-                #return geom_item.Items[0].Depth
-                #print(shape)
-                continue
-            elif representation_type == 'Brep':
-                return get_brep_height(shape)
-                #e_bottom = ifcopenshell.util.shape.get_bottom_elevation(shape)
-                #e_top = ifcopenshell.util.shape.get_top_elevation(shape)
-                #return e_top - e_bottom
-                
+            
 
-            else:
-                #print (f"EXTRA PROBLEM - {geom_item.Items[0]}")
-                continue
+def get_extrusion_direction(element,schema):
+    """VERSION 2 for IFC 4.0"""
+    geom_items = element.Representation.Representations
+    #print (geom_items)
+    if not geom_items:
+        return None  # No geometry found
+    
+    for geom_item in geom_items:
+        shape = geom_item.Items[0]
+        if geom_item.is_a('IfcShapeRepresentation') and shape:
+            representation_type = geom_item.RepresentationType
+            #print (representation_type)
+            match representation_type:
+                case 'BoundingBox':
+                    return shape.ExtrudedDirection
+                case 'SweptSolid':
+                    return shape.ExtrudedDirection
+                case 'Clipping':
+                    if (schema =="IFC2X3"):
+                        return shape.FirstOperand.ExtrudedDirection
+                    else:
+                        print(shape.FirstOperand)
+                        continue
+                case 'Brep':
+                    #print(dir(shape.Outer))
+                    return "Brep"
+                    #print (f"EXTRA PROBLEM - {shape}")
+                    continue
+                case _:
+                    #print (f"EXTRA PROBLEM - {shape}")
+                    continue
+    
 
+
+
+def are_walls_vertical(ifc_file, tolerance=1e-5):
+
+    # Get all IfcWall instances from the IFC file
+    walls = ifc_file.by_type('IfcWall')
+    
+    non_vertical_walls = []
+
+
+    # Iterate over each IfcWall instance
+    for wall in walls:
+        direction = get_extrusion_direction(wall,ifc_file.schema)
+        if direction =="Brep":
+            non_vertical_walls.append([get_id(wall),wall.Name,"Wall is modelled in place (can be ignored if intentional)"])
+        else:
+            direction = direction.DirectionRatios
+            z = direction[2]-1
+            if abs(z) > tolerance:
+                non_vertical_walls.append([get_id(wall),wall.Name,"Wall is not vertical"])
+                print(z)
+
+    return non_vertical_walls
 
 
 def check_wall_heights(ifc_file):
@@ -199,31 +226,31 @@ def check_wall_heights(ifc_file):
         
         # Find the corresponding storey
         if current_storey is None :
-            print(f"Warning: Could not find corresponding storey for wall {get_id(wall)}")
+            #print(f"Warning: Could not find corresponding storey for wall {get_id(wall)}")
             walls_major.append[[get_id(wall),wall.Name,"Could not find corresponding storey for wall"]]
             continue
 
         current_storey_index = storeys.index(current_storey)
         if current_storey_index == len(storeys) - 1:
             #storey_height = calculate_storey_height(storeys[current_storey_index])
-            print (f"Wall {get_id(wall)} is {wall_height} {units} tall. It is in the highest level")
+            #print (f"Wall {get_id(wall)} is {wall_height} {units} tall. It is in the highest level")
             walls_ok.append([get_id(wall),wall.Name,"OK"])
-
         else:
             next_storey = storeys[current_storey_index+1]
             storey_height = next_storey.Elevation - current_storey.Elevation 
 
         if wall_height > storey_height:
             #print(f"Wall {wall.GlobalId} is taller than or equal to the corresponding storey height.")
-            print (f"Wall {get_id(wall)} is {wall_height} {units} tall. The corresponding storey height is {storey_height} {units}")
+            #print (f"Wall {get_id(wall)} is {wall_height} {units} tall. The corresponding storey height is {storey_height} {units}")
             walls_minor.append([get_id(wall),wall.Name,f"Reduce height by { wall_height - storey_height} {units}"])
             all_walls_shorter = False
         else:
             walls_ok.append([get_id(wall),wall.Name,"OK"])
         
-        
+    """
     if all_walls_shorter:
         print("All walls are shorter than or equal to the corresponding storey heights.")
+        
     else:
         print("Not all walls are shorter than or equal to the corresponding storey heights.")
 
@@ -231,7 +258,7 @@ def check_wall_heights(ifc_file):
     print (f"Number of Walls with major issues = {len(walls_major)}")
     print (f"Number of Walls with minor issues ={len(walls_minor)}")
     print (f"Number of Walls with no issues ={len(walls_ok)}")
-    #print (f"IDs of walls with major issues = {ids}")
+    """
     print (".................")
 
     return walls,walls_major,walls_minor,walls_ok
