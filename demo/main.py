@@ -2,14 +2,14 @@ import ifcopenshell
 import functions as qc
 
 
-ifc_file_path = 'models/rac_advanced_sample_project.ifc'
-#ifc_file_path = 'models\AC2Ø-Institute-Var-2.ifc'
-#ifc_file_path = 'models\House.ifc'
-#ifc_file_path = 'models\example project location.ifc'
+ifc_file_path = 'ifc/rac_advanced_sample_project.ifc'
+#ifc_file_path = 'ifc\AC2Ø-Institute-Var-2.ifc'
+#ifc_file_path = 'ifc\House.ifc'
+#ifc_file_path = 'ifc\example project location.ifc'
 
 ifc = ifcopenshell.open(ifc_file_path)
-print (ifc)
-"""
+
+
 print("Checking Verticality...")
 
 tolerance = 1e-5
@@ -30,7 +30,7 @@ storey_heights = qc.extract_storey_heights(ifc)
 
 print("Checking Wall Heights....")
 #qc.check_walls_in_storeys(ifc_file_path, storey_heights)
-qc.check_wall_heights(ifc)"""
+qc.check_wall_heights(ifc)
 
 
 
