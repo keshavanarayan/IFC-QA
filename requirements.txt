@@ -1,0 +1,4 @@
+ifcopenshell==0.7.0.231218
+ifctester==0.0.240218
+numpy==1.26.4
+streamlit==1.32.2

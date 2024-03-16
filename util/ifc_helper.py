@@ -2,7 +2,6 @@ import ifcopenshell
 import ifcopenshell.geom
 import ifcopenshell.util.shape
 import math
-import numpy as np
 import ifcopenshell.util.element
 import ifcopenshell.util.constraint
 import ifcopenshell.util.unit
