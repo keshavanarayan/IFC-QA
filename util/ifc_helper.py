@@ -320,3 +320,15 @@ def calculate_storey_height(storey):
     return bounding_dim
 
 
+def has_repeating_elements(list_of_lists):
+    flattened_list = [item for sublist in list_of_lists for item in sublist]
+    unique_items = set()
+    conflicting_items = []
+
+    for item in flattened_list:
+        if item in unique_items:
+            conflicting_items.append(item)
+        else:
+            unique_items.add(item)
+
+    return conflicting_items

@@ -49,10 +49,10 @@ def main():
         st.table(table3_data)
         st.divider()
 
-        #print (has_repeating_elements(walls_ok))
-        #print (has_repeating_elements(walls))
-        #print (has_repeating_elements(walls_major))
-        #print (has_repeating_elements(walls_minor))
+        #print (qc.has_repeating_elements(walls_ok))
+        #print (qc.has_repeating_elements(walls))
+        #print (qc.has_repeating_elements(walls_major))
+        #print (qc.has_repeating_elements(walls_minor))
 
 
 
@@ -76,18 +76,7 @@ def main():
         
         st.download_button(label="Download Excel", data=download_excel(), file_name="wall_data.xlsx", mime="application/octet-stream")
         
-def has_repeating_elements(list_of_lists):
-    flattened_list = [item for sublist in list_of_lists for item in sublist]
-    unique_items = set()
-    conflicting_items = []
 
-    for item in flattened_list:
-        if item in unique_items:
-            conflicting_items.append(item)
-        else:
-            unique_items.add(item)
-
-    return conflicting_items
 
 
 if __name__ == "__main__":
