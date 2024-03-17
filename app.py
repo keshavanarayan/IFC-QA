@@ -10,6 +10,8 @@ def main():
 
     uploaded_file = st.file_uploader("Upload IFC file", type=["ifc"])
 
+    excel_data = []
+
     if uploaded_file is not None:
 
         # TODO: write to server if needed
@@ -34,10 +36,12 @@ def main():
         st.header(f"Walls with Major Issues : {len(walls_major)}")
         table1_data = pd.DataFrame(data=walls_major, columns=['IDs', 'Type', 'Issues'])
         st.table(table1_data)
+        excel_data.append([table1_data,"Walls With Major Issues"])
 
         st.header(f"Walls with Minor Issues : {len(walls_minor)}")
         table2_data = pd.DataFrame(data=walls_minor, columns=['IDs', 'Type', 'Issues'])
         st.table(table2_data)
+        excel_data.append([table2_data,"Walls with Minor Issues"])
 
         st.header(f"Walls with No Issues : {len(walls_ok)}")
 
@@ -47,6 +51,8 @@ def main():
         st.header(f"Wall Verticality + Wall Modelling Issues : {len(non_vertical_walls)}")
         table3_data = pd.DataFrame(data=non_vertical_walls, columns=['IDs', 'Type', 'Issues'])
         st.table(table3_data)
+        excel_data.append([table3_data,"Wall Verticality + Modelling"])
+
         st.divider()
 
         #print (qc.has_repeating_elements(walls_ok))
@@ -54,29 +60,22 @@ def main():
         #print (qc.has_repeating_elements(walls_major))
         #print (qc.has_repeating_elements(walls_minor))
 
-
-
         # Download button for exporting data as Excel
-        def download_excel():
-            buffer = io.BytesIO()
-            with pd.ExcelWriter(buffer) as writer:
-                table1_data.to_excel(writer, sheet_name='Walls with Major Issues', index=False)
-                table2_data.to_excel(writer, sheet_name='Walls with Minor Issues', index=False)
-                table3_data.to_excel(writer, sheet_name='Wall Verticality + Modelling', index=False)
-            
-            #TODO: write to server if needed
-            #with open("wall_data.xlsx", "rb") as f:
-            #    data = f.read()
-            #return data
-                
-            return buffer
-
-
+        st.download_button(label="Download Excel", data=download_excel(excel_data), file_name="wall_data.xlsx", mime="application/octet-stream")
 
         
-        st.download_button(label="Download Excel", data=download_excel(), file_name="wall_data.xlsx", mime="application/octet-stream")
+def download_excel(data):
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer) as writer:
+        for table_data in data:
+            table_data[0].to_excel(writer, sheet_name=table_data[1],index = False)
+    
+    #TODO: write to server if needed
+    #with open("wall_data.xlsx", "rb") as f:
+    #    data = f.read()
+    #return data
         
-
+    return buffer
 
 
 if __name__ == "__main__":
