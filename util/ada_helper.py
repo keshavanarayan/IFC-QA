@@ -9,11 +9,9 @@ import ifcopenshell.util
 
 import util.ifc_util as util
 
-
-
 settings = ifcopenshell.geom.settings()
 
-#TODO:use dir(element) to find attributes of elements
+
 
 
 def check_doors(ifc_file):
@@ -62,11 +60,26 @@ def check_floors(ifc_file):
     # Create a dictionary to map elements to their containing structure (storey)
     element_to_storey = util.element_wrt_storey(ifc_file)
 
+    #print (element_to_storey)
+
     for floor in floors:
-
         current_storey = element_to_storey.get(floor)
+        shape = floor.Representation.Representations[0].Items[0]
+
+        if current_storey:
+            #print(ifcopenshell.util.shape.get_side_area(shape.SweptArea,settings))
+            print(dir(shape.SweptArea.OuterCurve))
+            #print(dir(floor.Representation.Representations[0].Items[0]))
+            #print(util.get_swept_area(floor,ifc_file.schema))
+            #print("Storey alloted")
 
 
-    return floors,floors_major,floors_minor,floors_ok
+        else:
+            #print (floor.Name)
+            print ("Storey not alloted")
+
+    print("............")
+
+    #return floors,floors_major,floors_minor,floors_ok
     
 

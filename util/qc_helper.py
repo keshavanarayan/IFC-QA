@@ -68,15 +68,13 @@ def check_walls(ifc_file):
 
     all_walls_shorter = True
 
-    units = util.get_project_units(ifc_file)
+    units = util.get_project_units(ifc_file)[0]
 
     # Get all IfcBuildingStorey instances
     storeys = ifc_file.by_type("IfcBuildingStorey")
 
     # Sort the storeys by elevation
     storeys.sort(key=lambda x: x.Elevation)
-
-    #print (storeys)
 
     # Query for all instances of IfcWall
     walls = ifc_file.by_type("IfcWall")

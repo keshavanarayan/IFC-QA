@@ -8,7 +8,9 @@ import ifcopenshell.entity_instance
 import ifcopenshell.util
 settings = ifcopenshell.geom.settings()
 
-#--------------------------------utils--------------------------------------------
+#--------------------------------utils-------------------------------------------
+
+settings.USE_PYTHON_OPENCASCADE = True
 
 
 def element_wrt_storey(ifc_file):
@@ -94,6 +96,38 @@ def get_bounding_box_height(element,schema):
                 case _:
                     #print (f"EXTRA PROBLEM - {shape}")
                     continue
+
+def get_swept_area(element,schema):
+    
+    """VERSION 2 for IFC 4.0"""
+    geom_items = element.Representation.Representations
+    #print (geom_items)
+    if not geom_items:
+        return None  # No geometry found
+    
+    for geom_item in geom_items:
+        shape = geom_item.Items[0]
+        if geom_item.is_a('IfcShapeRepresentation') and shape:
+            representation_type = geom_item.RepresentationType
+            #print (representation_type)
+            match representation_type:
+                case 'BoundingBox':
+                    return ifcopenshell.util.shape.get_side_area(shape.SweptArea,settings)
+                     
+                case 'SweptSolid':
+                    return ifcopenshell.util.shape.get_side_area(shape.SweptArea,settings)
+                case 'Clipping':
+                    if schema =="IFC2X3":
+                        return shape.FirstOperand.SweptArea
+                        #print(shape.FirstOperand)
+                        continue
+                case 'Brep':
+                    return #get_brep_height(shape)
+                case _:
+                    #print (f"EXTRA PROBLEM - {shape}")
+                    continue
+    
+
 
 def get_extrusion_direction(element,schema):
     """VERSION 2 for IFC 4.0"""

@@ -23,7 +23,7 @@ def main():
     
     if uploaded_file is not None:
 
-        # TODO: write to server if needed
+        # FIXME: write to server if needed
         # with open(uploaded_file.name, "wb") : 
         #     f.write(uploaded_file.getvalue())
 
@@ -38,8 +38,11 @@ def main():
         project_data = pd.DataFrame(data=storeys, columns=['Storey Name', 'Storey Height'])
         st.sidebar.table(project_data)
 
-        # TODO: add tolerance
-        # st.sidebar.slider("Tolerance", 0, 100)
+
+
+        # TODO: add tolerance in all qc+ ada functions
+        tolerance = st.sidebar.slider("Tolerance in metres", 0.0, 1.0)
+        
 
 
         with tab1:
@@ -97,6 +100,8 @@ def main():
                 st.download_button(label="Download Excel", data=download_excel(door_excel_data), file_name="door_data.xlsx", mime="application/octet-stream")
             
             with st.expander("Floors Check",expanded=True):
+                ada.check_floors(ifc)
+                """
                 floors, floors_major, floors_minor, floors_ok = ada.check_floors(ifc)
                 st.header(f'Number of Floors in file : {len(floors)}')
 
@@ -104,6 +109,8 @@ def main():
                 table6_data = pd.DataFrame(data=floors_major, columns=['IDs', 'Type', 'Issues'])
                 st.table(table6_data)
                 floor_excel_data.append([table6_data,"Floors with Major Issues"])
+
+                """
 
 
                 
@@ -120,7 +127,7 @@ def download_excel(data):
         for table_data in data:
             table_data[0].to_excel(writer, sheet_name=table_data[1],index = False)
     
-    #TODO: write to server if needed
+    #FIXME: write to server if needed
     
     #with open("wall_data.xlsx", "rb") as f:
     #    data = f.read()
