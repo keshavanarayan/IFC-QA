@@ -71,9 +71,12 @@ def download_excel(data):
             table_data[0].to_excel(writer, sheet_name=table_data[1],index = False)
     
     #TODO: write to server if needed
-    #with open("wall_data.xlsx", "rb") as f:
-    #    data = f.read()
-    #return data
+    """
+    with open("wall_data.xlsx", "rb") as f:
+        data = f.read()
+    return data
+    
+    """
         
     return buffer
 
