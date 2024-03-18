@@ -4,6 +4,7 @@ import ifcopenshell
 import pandas as pd
 from util import qc_helper as qc
 from util import ada_helper as ada
+from util import ifc_util as util
 
 wall_excel_data = []
 door_excel_data =[]
@@ -30,22 +31,17 @@ def main():
         ifc = ifcopenshell.file.from_string(ifc_file.decode("utf-8"))
 
         st.sidebar.write(f"Schema: {ifc.schema}") 
-        st.sidebar.write(f"Project Units: {qc.get_project_units(ifc)[0]}")
+        st.sidebar.write(f"Project Units: {util.get_project_units(ifc)[0]}")
 
         storeys = qc.get_storey_heights(ifc)
 
         project_data = pd.DataFrame(data=storeys, columns=['Storey Name', 'Storey Height'])
         st.sidebar.table(project_data)
 
-
-        #print(storeys)
-        #for storey in storeys:
-         #   st.sidebar.write(f"Storey Name: {storey[0]}, Storey Height: {storey[1]}")
-
-
-
         # TODO: add tolerance
         # st.sidebar.slider("Tolerance", 0, 100)
+
+
         with tab1:
             
             with st.expander("Walls Check", expanded=True):
