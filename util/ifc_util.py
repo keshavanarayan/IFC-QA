@@ -6,14 +6,89 @@ import ifcopenshell.util.constraint
 import ifcopenshell.util.unit
 import ifcopenshell.entity_instance
 import ifcopenshell.util
-settings = ifcopenshell.geom.settings()
 
-#--------------------------------utils-------------------------------------------
+settings = ifcopenshell.geom.settings()
 
 settings.USE_PYTHON_OPENCASCADE = True
 
+#--------------------------------utils-------------------------------------------
 
-def element_wrt_storey(ifc_file):
+from collections import Counter
+
+def find_mode(arr):
+    if not arr:
+        return None
+    
+    counter = Counter(arr)
+    max_count = max(counter.values())
+    mode = [k for k, v in counter.items() if v == max_count]
+    return mode[0]  # If there are multiple modes, return the first one
+
+def find_deviations(arr, deviation_value):
+    if not arr:
+        return None
+    
+    mode_value = find_mode(arr)
+    deviations = [x for x in arr if abs(x - mode_value) > deviation_value]
+    return deviations
+
+
+def get_elements_wrt_storey(ifc_file,categorystring):
+
+    storey_wrt_element = get_storey_wrt_element(ifc_file)
+
+    element_wrt_storey = {}
+
+    for key,value in storey_wrt_element.items():
+        if key.is_a(categorystring):
+            #print(key)
+            element_wrt_storey.setdefault(value,[]).append(key)
+            #print (key,value)
+
+    return element_wrt_storey
+
+# Now slabs_by_storeys dictionary contains slabs sorted by storeys
+
+
+def get_top_elevation(element):
+
+    """VERSION 2 for IFC 4.0"""
+    geom_items = element.Representation.Representations
+    #print (geom_items)
+    if not geom_items:
+        return None  # No geometry found
+    
+    for geom_item in geom_items:
+        
+        shape = geom_item.Items[0]
+        crv = geom_item.Items[0].SweptArea
+        created_shape = ifcopenshell.geom.create_shape(settings,shape)
+        return ifcopenshell.util.shape.get_top_elevation(created_shape)
+
+
+                
+"""
+def get_profile_area(element):
+    if crv.is_a('IfcArbitraryClosedProfileDef'):
+        #print(dir(shape.SweptArea))
+        if crv.OuterCurve.is_a('IfcPolyline'):
+            print("Polyline")
+            print (dir(crv.OuterCurve))
+            return
+        if crv.is_a('IfcCompositeCurve'):
+            print("Composite Curve")
+            print ((crv.OuterCurve))
+            return
+
+    if crv.is_a('IfcRectangleProfileDef'):
+        area = crv.XDim * crv.YDim
+        return area
+    else:
+        print("NEW PROBLEM - ",(crv))
+"""
+            
+
+def get_storey_wrt_element(ifc_file):
     # Get all instances of IfcRelContainedInSpatialStructure
     rel_contained = ifc_file.by_type("IfcRelContainedInSpatialStructure")
 
@@ -34,9 +109,12 @@ def get_project_units(ifc_file):
     unit_text = ifcopenshell.util.unit.get_project_unit(ifc_file,"LENGTHUNIT")
     unit_scale = ifcopenshell.util.unit.calculate_unit_scale(ifc_file)
 
+    prefix = unit_text.Prefix
+    suffix = unit_text.Name
+
     #return dir(unit_scale)
     #return unit_scale.Prefix,unit_scale.Name
-    return unit_text.Prefix+unit_text.Name , unit_scale
+    return unit_text.Prefix+unit_text.Name , unit_scale,prefix,suffix
     """
     if unit_scale==0.001:
         return "mm"
@@ -46,6 +124,14 @@ def get_project_units(ifc_file):
         return "(units)"
     """
 
+def convert_to_m(ifc_file,unit):
+
+    prefix = get_project_units(ifc_file)[2]
+    suffix = get_project_units(ifc_file)[3]
+
+    converted_unit = ifcopenshell.util.unit.convert(unit,prefix,suffix,None,"METRE")
+
+    return converted_unit
 
 def get_id(element):
     #return element.GlobalId

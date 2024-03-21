@@ -80,10 +80,10 @@ def check_walls(ifc_file):
     walls = ifc_file.by_type("IfcWall")
 
     # Get all instances of IfcRelContainedInSpatialStructure
-    rel_contained = ifc_file.by_type("IfcRelContainedInSpatialStructure")
+    #rel_contained = ifc_file.by_type("IfcRelContainedInSpatialStructure")
 
     # Create a dictionary to map elements to their containing structure (storey)
-    element_to_storey = util.element_wrt_storey(ifc_file)
+    element_to_storey = util.get_storey_wrt_element(ifc_file)
 
     # Iterate through each wall
     for wall in walls:

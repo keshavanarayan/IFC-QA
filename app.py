@@ -11,7 +11,7 @@ door_excel_data =[]
 floor_excel_data =[]
 
 def main():
-    st.title("DODDA Cloud Validator")
+    st.title("DODDA Validator")
     #st.write("Upload your IFC file below:")
 
     st.sidebar.header("Upload your IFC file below:")
@@ -79,6 +79,7 @@ def main():
         
         with tab2:
             with st.expander("Doors Check",expanded=True):
+                #TODO: make it unit agnostic
                 doors,doors_major,doors_minor,doors_ok = ada.check_doors(ifc)
                 st.header(f'Number of Doors in file : {len(doors)}')
 
@@ -100,7 +101,10 @@ def main():
                 st.download_button(label="Download Excel", data=download_excel(door_excel_data), file_name="door_data.xlsx", mime="application/octet-stream")
             
             with st.expander("Floors Check",expanded=True):
+                #TODO: make it unit agnostic
                 ada.check_floors(ifc)
+                #print (f"Units : {util.convert_to_m(ifc_file,0.1)}")
+
                 """
                 floors, floors_major, floors_minor, floors_ok = ada.check_floors(ifc)
                 st.header(f'Number of Floors in file : {len(floors)}')
@@ -109,14 +113,10 @@ def main():
                 table6_data = pd.DataFrame(data=floors_major, columns=['IDs', 'Type', 'Issues'])
                 st.table(table6_data)
                 floor_excel_data.append([table6_data,"Floors with Major Issues"])
-
                 """
-
 
                 
 
-
-        
         with tab3:
             st.header("Hello")
 
