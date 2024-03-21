@@ -89,6 +89,15 @@ def get_profile_area(element):
             
 
 def get_storey_wrt_element(ifc_file):
+    """
+    Retrieve the storey (containing structure) for each element in the given IFC file.
+
+    Parameters:
+    - ifc_file: The IFC file to extract storey information from.
+
+    Returns:
+    - element_to_storey: A dictionary mapping each element to its containing structure (storey).
+    """
     # Get all instances of IfcRelContainedInSpatialStructure
     rel_contained = ifc_file.by_type("IfcRelContainedInSpatialStructure")
 
@@ -106,6 +115,11 @@ def get_storey_wrt_element(ifc_file):
     return element_to_storey
 
 def get_project_units(ifc_file):
+    """
+    A function that retrieves the project units from the provided ifc_file.
+    It obtains the unit text and scale, extracts the prefix and suffix from the unit text,
+    and returns a tuple containing the concatenated prefix and suffix, unit scale, prefix, and suffix.
+    """
     unit_text = ifcopenshell.util.unit.get_project_unit(ifc_file,"LENGTHUNIT")
     unit_scale = ifcopenshell.util.unit.calculate_unit_scale(ifc_file)
 
@@ -126,6 +140,7 @@ def get_project_units(ifc_file):
 
 def convert_to_m(ifc_file,unit):
 
+
     prefix = get_project_units(ifc_file)[2]
     suffix = get_project_units(ifc_file)[3]
 
@@ -134,6 +149,15 @@ def convert_to_m(ifc_file,unit):
     return converted_unit
 
 def get_id(element):
+    """
+    Get the ID of the element.
+
+    Args:
+        element: The element to retrieve the ID from.
+
+    Returns:
+        The ID of the element.
+    """
     #return element.GlobalId
     return ifcopenshell.entity_instance.id(element)
 
@@ -155,6 +179,7 @@ def get_brep_height(brep):
 
 #TODO: find solution if it is a Boolean Clipping result
 def get_bounding_box_height(element,schema):
+    
 
     """VERSION 2 for IFC 4.0"""
     geom_items = element.Representation.Representations
