@@ -122,6 +122,15 @@ def main():
 
         
 def download_excel(data):
+    """
+    Downloads the given data as an Excel file and returns the file as a buffer.
+    
+    Args:
+        data: The data to be written to the Excel file.
+    
+    Returns:
+        The Excel file as a buffer.
+    """
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer) as writer:
         for table_data in data:

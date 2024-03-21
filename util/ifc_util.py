@@ -16,6 +16,15 @@ settings.USE_PYTHON_OPENCASCADE = True
 from collections import Counter
 
 def find_mode(arr):
+    """
+    Find the mode(s) in a given list 'arr' and return the mode with the highest frequency.
+    
+    Parameters:
+    arr (list): A list of elements to find the mode(s) from.
+    
+    Returns:
+    int or float: The mode with the highest frequency in the input list.
+    """
     if not arr:
         return None
     
@@ -25,6 +34,13 @@ def find_mode(arr):
     return mode[0]  # If there are multiple modes, return the first one
 
 def find_deviations(arr, deviation_value):
+    """
+    Find deviations in the input array based on the given deviation value.
+
+    :param arr: The input array to find deviations in.
+    :param deviation_value: The threshold for deviations.
+    :return: A list of values in the input array that deviate from the mode by more than the specified deviation value.
+    """
     if not arr:
         return None
     
@@ -34,6 +50,16 @@ def find_deviations(arr, deviation_value):
 
 
 def get_elements_wrt_storey(ifc_file,categorystring):
+    """
+	Get elements with respect to a specific storey based on the category provided.
+
+	Parameters:
+	- ifc_file: the IFC file containing the elements
+	- categorystring: the category of elements to filter by
+
+	Returns:
+	- A dictionary where the keys are storeys and the values are lists of elements belonging to that storey
+	"""
 
     storey_wrt_element = get_storey_wrt_element(ifc_file)
 
@@ -51,8 +77,16 @@ def get_elements_wrt_storey(ifc_file,categorystring):
 
 
 def get_top_elevation(element):
+    """
+    Get the top elevation of the given element.
 
-    """VERSION 2 for IFC 4.0"""
+    Parameters:
+    - element: The element for which to retrieve the top elevation.
+
+    Returns:
+    - The top elevation of the element, or None if no geometry is found.
+    """
+
     geom_items = element.Representation.Representations
     #print (geom_items)
     if not geom_items:
@@ -138,8 +172,16 @@ def get_project_units(ifc_file):
         return "(units)"
     """
 
-def convert_to_m(ifc_file,unit):
+#TODO:complete unit conversion to metres
 
+def convert_to_m(ifc_file,unit):
+    """
+	Converts a given unit to METRE using project units from the provided ifc_file.
+	
+	:param ifc_file: The ifc file containing project units information.
+	:param unit: The unit to be converted.
+	:return: The unit converted to METRE.
+	"""
 
     prefix = get_project_units(ifc_file)[2]
     suffix = get_project_units(ifc_file)[3]
@@ -163,6 +205,14 @@ def get_id(element):
 
 
 def get_brep_height(brep):
+    """
+	Calculate the height of a B-Rep object.
+
+	:param brep: The B-Rep object.
+	:type brep: BRep
+	:return: The height of the B-Rep object.
+	:rtype: float
+	"""
 
     vertices = []
     for face in brep.Outer.CfsFaces:
@@ -179,9 +229,18 @@ def get_brep_height(brep):
 
 #TODO: find solution if it is a Boolean Clipping result
 def get_bounding_box_height(element,schema):
-    
 
-    """VERSION 2 for IFC 4.0"""
+    """
+    Get the height of the bounding box of the element based on its geometry representation.
+    
+    Parameters:
+        element (object): The element for which to calculate the bounding box height.
+        schema (str): The schema version to consider for certain calculations.
+    
+    Returns:
+        float or None: The height of the bounding box if found, None if no geometry is found or if the representation type is not recognized.
+    """
+
     geom_items = element.Representation.Representations
     #print (geom_items)
     if not geom_items:
@@ -209,8 +268,17 @@ def get_bounding_box_height(element,schema):
                     continue
 
 def get_swept_area(element,schema):
+    """
+    A function to calculate the swept area of a given element based on its geometry representations.
     
-    """VERSION 2 for IFC 4.0"""
+    Parameters:
+    - element: The element for which the swept area needs to be calculated.
+    - schema: The schema version being used.
+    
+    Returns:
+    - The swept area of the element if found, otherwise returns None.
+    """
+
     geom_items = element.Representation.Representations
     #print (geom_items)
     if not geom_items:
@@ -241,7 +309,17 @@ def get_swept_area(element,schema):
 
 
 def get_extrusion_direction(element,schema):
-    """VERSION 2 for IFC 4.0"""
+    """
+	A function to get the extrusion direction based on the shape representation type.
+	
+	Parameters:
+	    element: The element for which the extrusion direction is needed.
+	    schema: The schema version for which the extrusion direction is being calculated.
+	
+	Returns:
+	    The extrusion direction based on the shape representation type, or None if no geometry is found.
+	"""
+
     geom_items = element.Representation.Representations
     #print (geom_items)
     if not geom_items:
@@ -275,6 +353,17 @@ def get_extrusion_direction(element,schema):
 
 
 def calculate_storey_height(storey):
+    """
+    Calculate the height of a storey based on its elements' geometry representations.
+    
+    Parameters:
+    - storey: an IfcStorey object
+    
+    Returns:
+    - The maximum bounding dimension of the storey
+
+    """
+
     elements = ifcopenshell.util.element.get_decomposition(storey)
     bounding_dim = 0
     max_dim = 0
@@ -320,6 +409,20 @@ def calculate_storey_height(storey):
 
 
 def has_repeating_elements(list_of_lists):
+    """
+    Given a list of lists, this function checks if any element in the flattened list appears more than once.
+    It returns a list of all the repeating elements.
+
+    Parameters:
+    - list_of_lists (list): A list of lists, where each sublist contains elements that may be repeated.
+
+    Returns:
+    - conflicting_items (list): A list of all the repeating elements in the flattened list.
+
+    Example:
+    has_repeating_elements([[1, 2, 3], [4, 5, 6], [2, 7, 8]]) -> [2]
+    
+    """
     flattened_list = [item for sublist in list_of_lists for item in sublist]
     unique_items = set()
     conflicting_items = []

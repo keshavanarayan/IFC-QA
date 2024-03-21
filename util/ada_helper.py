@@ -11,6 +11,19 @@ import util.ifc_util as util
 settings = ifcopenshell.geom.settings()
 
 def check_doors(ifc_file,door_width_metres=0.9):
+    """
+    A function to check door accessibility criteria.
+
+    Parameters:
+    - ifc_file: The IFC file to extract doors from.
+    - door_width_metres: The width threshold for door accessibility in meters (default is 0.9 meters).
+
+    Returns:
+    - doors: List of all doors extracted from the IFC file.
+    - doors_major: List of doors that require major modifications for accessibility.
+    - doors_minor: List of doors that require minor modifications for accessibility.
+    - doors_ok: List of doors that meet the accessibility criteria.
+    """
     #TODO: finish door accessibility criteria
     
     doors = ifc_file.by_type("IfcDoor")
@@ -40,9 +53,18 @@ def check_doors(ifc_file,door_width_metres=0.9):
 
 
 def check_floors(ifc_file,floor_height_metres=0.15):
-
-    #TODO:find major slab and minor slabs
+    """
+	Check the floors in the given IFC file and return the floors that have major deviations, minor deviations, and those that are okay.
+	
+	:param ifc_file: The IFC file to check the floors in.
+	:type ifc_file: str
+	:param floor_height_metres: The floor height in metres, defaults to 0.15.
+	:type floor_height_metres: float
+	:return: A tuple containing the floors grouped by storeys, the floors with major deviations, the floors with minor deviations, and the floors that are okay.
+	:rtype: tuple
+	"""
     
+    #TODO:find major slab and minor slabs
 
     floors_major = []
     floors_minor = []
