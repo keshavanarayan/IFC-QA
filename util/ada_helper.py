@@ -10,13 +10,13 @@ import util.ifc_util as util
 
 settings = ifcopenshell.geom.settings()
 
-def check_doors(ifc_file,door_width_metres=0.9):
+def check_doors(ifc_file,door_width_mm=900,handicap_clear_mm= 1000):
     """
     A function to check door accessibility criteria.
 
     Parameters:
     - ifc_file: The IFC file to extract doors from.
-    - door_width_metres: The width threshold for door accessibility in meters (default is 0.9 meters).
+    - door_width_mm: The width threshold for door accessibility in mm (default is 900 mm).
 
     Returns:
     - doors: List of all doors extracted from the IFC file.
@@ -37,7 +37,15 @@ def check_doors(ifc_file,door_width_metres=0.9):
 
     for door in doors:
         handicap_accessible = ifcopenshell.util.element.get_psets(door).get("HandicapAccessible")
-        min_width = door_width_metres * unitscale #convert project units to metres
+        min_width = door_width_mm #* unitscale #TODO:convert project units to metres
+
+        util.get_object_placement_info(door)
+
+        #origin,axis,direction = util.get_object_placement_info(door)
+
+        #bbox = util.get_box3d(origin,axis,direction,door.OverallWidth,handicap_clear_mm,door.OverallHeight)
+
+
         if door.OverallWidth < min_width:
             doors_minor.append([util.get_id(door),door.Name,f"Reduce width by {door.OverallWidth - min_width} {units}"])
             continue
@@ -52,7 +60,7 @@ def check_doors(ifc_file,door_width_metres=0.9):
     return doors,doors_major,doors_minor,doors_ok
 
 
-def check_floors(ifc_file,floor_height_metres=0.15):
+def check_floors(ifc_file,floor_height_mm=150):
     """
 	Check the floors in the given IFC file and return the floors that have major deviations, minor deviations, and those that are okay.
 	
@@ -73,7 +81,7 @@ def check_floors(ifc_file,floor_height_metres=0.15):
     units = util.get_project_units(ifc_file)[0]
     unitscale = util.get_project_units(ifc_file)[1]
 
-    floor_height = floor_height_metres * unitscale
+    floor_height = floor_height_mm #* unitscale #TODO:convert project units to metres
 
     print (f"Floor Height Difference to be checked= {floor_height} {units}")
 
@@ -99,14 +107,16 @@ def check_floors(ifc_file,floor_height_metres=0.15):
         #print (storey.Name)
         
         if storey in slabs_by_storeys.keys():
-            #print (storey)
+            print (storey.Name)
             
             slabs = slabs_by_storeys[storey]
             for slab in slabs:
-                temp.append(util.get_top_elevation(slab))
-                #print(util.get_top_elevation(slab))
-                floors.append(slab)
-            
+                if "Sunscreen" not in slab.Name:
+                    temp.append(util.get_top_elevation(slab))
+                    #print(util.get_top_elevation(slab))
+                    floors.append(slab)
+                else:
+                    floors_minor.append([util.get_id(slab),slab.Name,f"Remove Sunscreen from Slabs with id {util.get_id(slab)}"])
             
             
             deviations = util.find_deviations(temp,floor_height)
@@ -114,12 +124,17 @@ def check_floors(ifc_file,floor_height_metres=0.15):
             
             floor_height_average = util.find_mode(temp)
             print(floor_height_average)
-            """
-            for dev in deviations:
-                floor_indices = temp.index(deviations)
-                for index in floor_indices:
-                    floors_major.append([util.get_id(floors[index]),floors[index].Name,f"Change height by {floor_height_average - dev} {units}"])
-            """
+
+            if deviations:
+                for dev in deviations:
+                    floor_indices = temp.index(deviations)
+                    for index in floor_indices:
+                        floors_major.append([util.get_id(floors[index]),floors[index].Name,f"Change height by {floor_height_average - dev} {units} in {storey.Name}"])
+            else:
+                for floor in floors:
+                    floors_ok.append([util.get_id(floor),floor.Name,"OK"])
+            
+            
 
     return slabs_by_storeys,floors_major,floors_minor,floors_ok
     

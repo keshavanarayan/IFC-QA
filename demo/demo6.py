@@ -10,7 +10,7 @@ import ifcopenshell.entity_instance
 file = ifcopenshell.open("ifc/rac_advanced_sample_project.ifc")
 
 # Get the door element
-door = file.by_type("IfcDoor")[0]
+door = file.by_type("IfcDoor")[2]
 
 contexts = file.by_type("IfcRepresentationContext")
 
@@ -20,7 +20,7 @@ for each in contexts:
 
 
 nested_elements = ifcopenshell.util.representation.get_representation(door,context)
-
+print(ifcopenshell.entity_instance.id(door))
 print((door.ObjectPlacement.RelativePlacement.Axis.DirectionRatios))
 print((door.ObjectPlacement.RelativePlacement.Location.Coordinates))
 print((door.ObjectPlacement.RelativePlacement.RefDirection.DirectionRatios))

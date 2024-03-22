@@ -102,10 +102,10 @@ def main():
             
             with st.expander("Floors Check",expanded=True):
                 #TODO: make it unit agnostic
-                ada.check_floors(ifc)
+                #ada.check_floors(ifc)
                 #print (f"Units : {util.convert_to_m(ifc_file,0.1)}")
 
-                """
+                
                 floors, floors_major, floors_minor, floors_ok = ada.check_floors(ifc)
                 st.header(f'Number of Floors in file : {len(floors)}')
 
@@ -113,7 +113,14 @@ def main():
                 table6_data = pd.DataFrame(data=floors_major, columns=['IDs', 'Type', 'Issues'])
                 st.table(table6_data)
                 floor_excel_data.append([table6_data,"Floors with Major Issues"])
-                """
+
+                st.header(f"Floors with Minor Issues : {len(floors_minor)}")
+                table7_data = pd.DataFrame(data=floors_minor, columns=['IDs', 'Type', 'Issues'])
+                st.table(table7_data)
+                floor_excel_data.append([table7_data,"Floors with Minor Issues"])
+
+                st.header(f"Floors with No Issues : {len(floors_ok)}")
+                
 
                 
 

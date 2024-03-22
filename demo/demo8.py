@@ -54,7 +54,21 @@ print(box1_vertices)
 print("Box 2 Vertices:")
 print(box2_vertices)
 
-if boxes_intersect(box1_vertices, box2_vertices):
-    print("Boxes intersect.")
+def boxes_intersect(box1, box2):
+  # Check for overlap along each axis
+  for i in range(3):  # Check for each dimension (x, y, z)
+      self_min = np.min(box1[:, i])
+      self_max = np.max(box1[:, i])
+      other_min = np.min(box2[:, i])
+      other_max = np.max(box2[:, i])
+
+      if self_max < other_min or self_min > other_max:
+          return False
+
+  return True
+
+
+if boxes_intersect(box1_vertices,box2_vertices):
+    print("Boxes intersect")
 else:
-    print("Boxes do not intersect.")
+    print("Boxes do not intersect")

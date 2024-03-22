@@ -13,6 +13,65 @@ settings.USE_PYTHON_OPENCASCADE = True
 
 #--------------------------------utils-------------------------------------------
 
+import numpy as np
+
+def get_box3d(origin, x_axis, extrusion_direction, length, width, height):
+    """
+    Calculate the 3D box vertices based on the given origin, axes, and dimensions.
+
+    Parameters:
+    origin (np.array): The origin point of the box.
+    x_axis (np.array): The x-axis direction vector.
+    extrusion_direction (np.array): The extrusion direction vector.
+    length (float): The length of the box.
+    width (float): The width of the box.
+    height (float): The height of the box.
+
+    Returns:
+    np.array: An array containing the vertices of the 3D box.
+    """
+    # Normalize vectors
+    x_axis = x_axis / np.linalg.norm(x_axis)
+    #extrusion_direction = extrusion_direction / np.linalg.norm(extrusion_direction)
+
+    # Calculate other axes
+    z_axis = extrusion_direction / np.linalg.norm(extrusion_direction)
+    y_axis = np.cross(z_axis, x_axis)
+
+    length = abs(length)
+    width = abs(width)
+    height = abs(height)
+
+    # Calculate vertices
+    
+    v0 = origin
+    v1 = origin + length * x_axis
+    v2 = origin + width * y_axis
+    v3 = origin + height * extrusion_direction
+    v4 = v1 + width * y_axis
+    v5 = v1 + height * extrusion_direction
+    v6 = v2 + length * x_axis
+    v7 = v3 + length * x_axis
+
+    #print(x_axis,y_axis,z_axis)
+
+    # Return vertices
+    return np.array([v0, v1, v2, v3, v4, v5, v6, v7])
+
+
+def boxes_intersect(box1, box2):
+  # Check for overlap along each axis
+  for i in range(3):  # Check for each dimension (x, y, z)
+      self_min = np.min(box1[:, i])
+      self_max = np.max(box1[:, i])
+      other_min = np.min(box2[:, i])
+      other_max = np.max(box2[:, i])
+
+      if self_max < other_min or self_min > other_max:
+          return False
+
+  return True
+
 from collections import Counter
 
 def find_mode(arr):
@@ -227,9 +286,6 @@ def get_brep_height(brep):
     return max(vertices).Coordinates[2]-min(vertices).Coordinates[2]
 
 
-def get_bounding_box(element):
-    pass
-
 #TODO: find solution if it is a Boolean Clipping result
 def get_bounding_box_height(element,schema):
 
@@ -423,8 +479,29 @@ def get_representation(ifc_file,element,contextstring="Body"):
 
     return nested_elements
 
-def get_object_placement(element):
-    return
+def get_object_placement_info(element):
+    """
+    Get object placement information from the given element.
+    
+    Parameters:
+    - element: The element containing object placement information.
+    
+    Returns:
+    - numpy array: The origin coordinates of the object placement.
+    - numpy array: The axis direction ratios of the object placement.
+    - numpy array: The direction ratios of the object placement.
+    """
+    print(dir(element.ObjectPlacement.RelativePlacement))
+    """
+    if element.ObjectPlacement.RelativePlacement:
+        direction = element.ObjectPlacement.RelativePlacement.Axis.DirectionRatios
+        #direction = (0,0,1)
+        origin = element.ObjectPlacement.RelativePlacement.Location.Coordinates
+        axis = element.ObjectPlacement.RelativePlacement.RefDirection.DirectionRatios
+    """
+    
+
+    #return np.array(origin),np.array(axis),np.array(direction)
 
 
 
