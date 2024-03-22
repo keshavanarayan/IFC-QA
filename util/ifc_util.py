@@ -227,6 +227,9 @@ def get_brep_height(brep):
     return max(vertices).Coordinates[2]-min(vertices).Coordinates[2]
 
 
+def get_bounding_box(element):
+    pass
+
 #TODO: find solution if it is a Boolean Clipping result
 def get_bounding_box_height(element,schema):
 
@@ -235,7 +238,7 @@ def get_bounding_box_height(element,schema):
     
     Parameters:
         element (object): The element for which to calculate the bounding box height.
-        schema (str): The schema version to consider for certain calculations.
+        schema (file.schema): The schema version to consider for certain calculations.
     
     Returns:
         float or None: The height of the bounding box if found, None if no geometry is found or if the representation type is not recognized.
@@ -273,7 +276,7 @@ def get_swept_area(element,schema):
     
     Parameters:
     - element: The element for which the swept area needs to be calculated.
-    - schema: The schema version being used.
+    - schema (file.schema): The schema version being used.
     
     Returns:
     - The swept area of the element if found, otherwise returns None.
@@ -406,6 +409,24 @@ def calculate_storey_height(storey):
             bounding_dim = max(bounding_dim, max_dim)
                 
     return bounding_dim
+
+
+def get_representation(ifc_file,element,contextstring="Body"):
+    contexts = ifc_file.by_type("IfcRepresentationContext")
+
+    for each in contexts:
+        if each.ContextIdentifier == contextstring:
+            context = each
+
+
+    nested_elements = ifcopenshell.util.representation.get_representation(element,context)
+
+    return nested_elements
+
+def get_object_placement(element):
+    return
+
+
 
 
 def has_repeating_elements(list_of_lists):
