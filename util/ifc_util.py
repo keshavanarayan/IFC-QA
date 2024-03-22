@@ -154,7 +154,7 @@ def get_top_elevation(element):
     for geom_item in geom_items:
         
         shape = geom_item.Items[0]
-        crv = geom_item.Items[0].SweptArea
+        #crv = geom_item.Items[0].SweptArea
         created_shape = ifcopenshell.geom.create_shape(settings,shape)
         return ifcopenshell.util.shape.get_top_elevation(created_shape)
 
@@ -207,6 +207,15 @@ def get_storey_wrt_element(ifc_file):
     
     return element_to_storey
 
+def get_storey_of_element(ifc_file,element):
+    storeys = get_storey_wrt_element(ifc_file)
+
+    for each in storeys:
+        if get_id(each) == get_id(element):
+            return storeys[each]
+
+
+
 def get_project_units(ifc_file):
     """
     A function that retrieves the project units from the provided ifc_file.
@@ -219,9 +228,14 @@ def get_project_units(ifc_file):
     prefix = unit_text.Prefix
     suffix = unit_text.Name
 
+    if prefix:
+        unit = unit_text.Prefix+unit_text.Name
+    else:
+        unit = unit_text.Name
+
     #return dir(unit_scale)
     #return unit_scale.Prefix,unit_scale.Name
-    return unit_text.Prefix+unit_text.Name , unit_scale,prefix,suffix
+    return unit , unit_scale,prefix,suffix
     """
     if unit_scale==0.001:
         return "mm"
@@ -391,14 +405,18 @@ def get_extrusion_direction(element,schema):
             #print (representation_type)
             match representation_type:
                 case 'BoundingBox':
-                    return shape.ExtrudedDirection
+                    if (schema == "IFC2X3"):
+                        return shape.ExtrudedDirection
+                    else:
+                        shape.ZDim
+                        #print (dir(shape))
                 case 'SweptSolid':
                     return shape.ExtrudedDirection
                 case 'Clipping':
                     if (schema =="IFC2X3"):
                         return shape.FirstOperand.ExtrudedDirection
-                        print(shape.FirstOperand)
-                        continue
+                    else:
+                        return dir(shape.FirstOperand) #shape.FirstOperand.ExtrudedDirection
                 case 'Brep':
                     #print(dir(shape.Outer))
                     return "Brep"
@@ -479,7 +497,7 @@ def get_representation(ifc_file,element,contextstring="Body"):
 
     return nested_elements
 
-def get_object_placement_info(element):
+def get_object_placement_info(ifc_file,element):
     """
     Get object placement information from the given element.
     
@@ -491,19 +509,43 @@ def get_object_placement_info(element):
     - numpy array: The axis direction ratios of the object placement.
     - numpy array: The direction ratios of the object placement.
     """
-    print(dir(element.ObjectPlacement.RelativePlacement))
-    """
-    if element.ObjectPlacement.RelativePlacement:
+    problem = []
+    
+    if element.ObjectPlacement.RelativePlacement.Axis and element.ObjectPlacement.RelativePlacement.Location and element.ObjectPlacement.RelativePlacement.RefDirection:
         direction = element.ObjectPlacement.RelativePlacement.Axis.DirectionRatios
         #direction = (0,0,1)
         origin = element.ObjectPlacement.RelativePlacement.Location.Coordinates
         axis = element.ObjectPlacement.RelativePlacement.RefDirection.DirectionRatios
-    """
+        #print(direction,origin,axis)
+    else:
+        problem = element
+        direction = None
+        origin = None
+        axis = None
+        #print (ifcopenshell.entity_instance.get_info(element.Representation.Representations[0].Items[0].MappingTarget))
+        #print (element.Name,get_id(element),get_storey_of_element(ifc_file,element).Name)
+    
     
 
-    #return np.array(origin),np.array(axis),np.array(direction)
+    return np.array(origin),np.array(axis),np.array(direction),problem
 
+def totuple(np_array):
+    """
+    Recursively converts the np.array into a tuple.
 
+    Parameters:
+        a (np.array): The input to be converted into a tuple.
+
+    Returns:
+        tuple: The converted tuple.
+
+    Raises:
+        TypeError: If the input `a` cannot be converted into a tuple.
+    """
+    try:
+        return tuple(totuple(i) for i in np_array)
+    except TypeError:
+        return np_array
 
 
 def has_repeating_elements(list_of_lists):

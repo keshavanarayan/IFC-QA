@@ -39,23 +39,30 @@ def check_doors(ifc_file,door_width_mm=900,handicap_clear_mm= 1000):
         handicap_accessible = ifcopenshell.util.element.get_psets(door).get("HandicapAccessible")
         min_width = door_width_mm #* unitscale #TODO:convert project units to metres
 
-        util.get_object_placement_info(door)
+        #util.get_object_placement_info(ifc_file,door)
 
-        #origin,axis,direction = util.get_object_placement_info(door)
+        origin,axis,direction,problem = util.get_object_placement_info(ifc_file,door)
 
-        #bbox = util.get_box3d(origin,axis,direction,door.OverallWidth,handicap_clear_mm,door.OverallHeight)
+        #print(origin,axis,direction,problem)
+
 
 
         if door.OverallWidth < min_width:
             doors_minor.append([util.get_id(door),door.Name,f"Reduce width by {door.OverallWidth - min_width} {units}"])
             continue
         
-        if not handicap_accessible:
-            doors_major.append([util.get_id(door),door.Name,"Make Door with Handicap Friendly Materials"])
+        """if not handicap_accessible:
+            doors_minor.append([util.get_id(door),door.Name,"Make Door with Handicap Friendly Materials"])
+            continue"""
+
+        if problem:
+            doors_major.append([util.get_id(door),door.Name,f"Door {door.Name} with id {util.get_id(door)} does not have transformation attached to it"])
             continue
-        
+
         else:
-            doors_ok.append([util.get_id(door),door.Name,door.OverallWidth])
+            bbox = util.get_box3d(origin,axis,direction,door.OverallWidth,handicap_clear_mm,door.OverallHeight)
+            print(bbox)
+            doors_ok.append([util.get_id(door),door.Name,"OK"])
 
     return doors,doors_major,doors_minor,doors_ok
 
@@ -71,9 +78,8 @@ def check_floors(ifc_file,floor_height_mm=150):
 	:return: A tuple containing the floors grouped by storeys, the floors with major deviations, the floors with minor deviations, and the floors that are okay.
 	:rtype: tuple
 	"""
-    
-    #TODO:find major slab and minor slabs
 
+    floors_f = []
     floors_major = []
     floors_minor = []
     floors_ok = []
@@ -85,9 +91,6 @@ def check_floors(ifc_file,floor_height_mm=150):
 
     print (f"Floor Height Difference to be checked= {floor_height} {units}")
 
-
-
-
     #slabs_by_storeys = util.get_elements_wrt_storey(ifc_file,"IfcSlab")
     slabs_by_storeys = util.get_elements_wrt_storey(ifc_file,"IfcSlab")
 
@@ -95,35 +98,30 @@ def check_floors(ifc_file,floor_height_mm=150):
 
     storeys.sort(key=lambda x: x.Elevation)
 
-    
-    """
-    for storey in storeys:
-        print (storey)
-    """
-    
     for storey in storeys:
         temp = []
         floors = []
         #print (storey.Name)
         
         if storey in slabs_by_storeys.keys():
-            print (storey.Name)
+            #print (storey.Name)
             
             slabs = slabs_by_storeys[storey]
             for slab in slabs:
+                floors_f.append(slab)
                 if "Sunscreen" not in slab.Name:
                     temp.append(util.get_top_elevation(slab))
                     #print(util.get_top_elevation(slab))
                     floors.append(slab)
                 else:
-                    floors_minor.append([util.get_id(slab),slab.Name,f"Remove Sunscreen from Slabs with id {util.get_id(slab)}"])
+                    floors_minor.append([util.get_id(slab),slab.Name,f"Remove Sunscreen from Slabs with id {util.get_id(slab)} in {storey.Name}"])
             
             
             deviations = util.find_deviations(temp,floor_height)
-            print (deviations)
+            #print (deviations)
             
             floor_height_average = util.find_mode(temp)
-            print(floor_height_average)
+            #print(floor_height_average)
 
             if deviations:
                 for dev in deviations:
@@ -135,8 +133,9 @@ def check_floors(ifc_file,floor_height_mm=150):
                     floors_ok.append([util.get_id(floor),floor.Name,"OK"])
             
             
+            
 
-    return slabs_by_storeys,floors_major,floors_minor,floors_ok
+    return floors_f,floors_major,floors_minor,floors_ok
     
     
     

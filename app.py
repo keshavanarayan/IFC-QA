@@ -1,5 +1,6 @@
 import io
 import streamlit as st
+import streamlit.components as components
 import ifcopenshell
 import pandas as pd
 from util import qc_helper as qc
@@ -83,7 +84,7 @@ def main():
                 doors,doors_major,doors_minor,doors_ok = ada.check_doors(ifc)
                 st.header(f'Number of Doors in file : {len(doors)}')
 
-                st.header(f"Doors with Major Issues : {len(doors)}")
+                st.header(f"Doors with Major Issues : {len(doors_major)}")
                 table4_data = pd.DataFrame(data=doors_major, columns=['IDs', 'Type', 'Issues'])
                 st.table(table4_data)
                 door_excel_data.append([table4_data,"Doors with Major Issues"])

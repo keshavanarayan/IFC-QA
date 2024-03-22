@@ -10,7 +10,7 @@ import ifcopenshell.entity_instance
 file = ifcopenshell.open("ifc/rac_advanced_sample_project.ifc")
 
 # Get the door element
-door = file.by_type("IfcDoor")[2]
+door = file.by_type("IfcDoor")[11]
 
 contexts = file.by_type("IfcRepresentationContext")
 

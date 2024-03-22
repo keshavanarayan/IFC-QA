@@ -1,26 +1,24 @@
 import ifcopenshell
-import ifcopenshell.api
 
-# Open the IFC file
-file = ifcopenshell.open("ifc/rac_advanced_sample_project.ifc")
+# Load the IFC file
+ifc_file = ifcopenshell.open("ifc/rac_advanced_sample_project.ifc")
 
-# Get all walls in the file
-wall = file.by_type("IfcWall")[50]
+# Query for all IfcElement entities
+elements = ifc_file.by_type("IfcElement")
 
-#print (ifcopenshell.entity_instance.id(walls[0]))
+# Iterate through each IfcElement
+for element in elements:
+    # Check if the element has a 'ContainedInStructure' attribute
+    if hasattr(element, "ContainedInStructure"):
+        # Get the first item in the list of relationships (assuming there's only one)
+        relation = element.ContainedInStructure[0]
+        
+        # Check if the relation is an 'IfcRelContainedInSpatialStructure'
+        if relation.is_a("IfcRelContainedInSpatialStructure"):
+            # Get the related building storey
+            building_storey = relation.RelatingStructure
 
-
-
-#for extruded solids
-#print(wall.Representation.Representations[1].Items[0].ExtrudedDirection) 
-#print(dir(wall.Representation.Representations[1].Items[0].ExtrudedDirection))
-
-
-#for clippings
-#print(wall.Representation.Representations[1].Items[0].FirstOperand.ExtrudedDirection) 
-#print(dir(wall.Representation.Representations[1].Items[0].FirstOperand.ExtrudedDirection))
-
-#for breps
-print (wall.Representation.Representations)
-
-
+            # Check if the related structure is an IfcBuildingStorey
+            if building_storey.is_a("IfcBuildingStorey"):
+                # Print the storey information
+                print(f"Element {element.Name} is in Building Storey {building_storey.Name}")

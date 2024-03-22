@@ -50,12 +50,20 @@ def are_walls_vertical(ifc_file, tolerance=1e-5):
         direction = util.get_extrusion_direction(wall,ifc_file.schema)
         if direction =="Brep":
             non_vertical_walls.append([util.get_id(wall),wall.Name,"Wall is modelled in place (can be ignored if intentional)"])
+            """
+            #TODO:check if wall has axis, then ignore, else add to list
+            origin,axis,direction,problem = util.get_object_placement_info(ifc_file,wall)
+            #print(direction)
+            if direction.any():
+                direction = util.totuple(direction)
+                z = direction[2]-1
+                if abs(z) > tolerance:
+                    non_vertical_walls.append([util.get_id(wall),wall.Name,"Wall is not vertical"])
+                    print(z)
+            """
         else:
-            direction = direction.DirectionRatios
-            z = direction[2]-1
-            if abs(z) > tolerance:
-                non_vertical_walls.append([util.get_id(wall),wall.Name,"Wall is not vertical"])
-                print(z)
+            continue
+    
 
     return non_vertical_walls
 
