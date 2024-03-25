@@ -10,7 +10,7 @@ import util.ifc_util as util
 
 settings = ifcopenshell.geom.settings()
 
-def check_doors(ifc_file,door_width_mm=900,handicap_clear_mm= 1000):
+def check_doors(ifc_file,door_width_m=0.9,handicap_clear_m=1):
     """
     A function to check door accessibility criteria.
 
@@ -23,6 +23,7 @@ def check_doors(ifc_file,door_width_mm=900,handicap_clear_mm= 1000):
     - doors_major: List of doors that require major modifications for accessibility.
     - doors_minor: List of doors that require minor modifications for accessibility.
     - doors_ok: List of doors that meet the accessibility criteria.
+    
     """
     #TODO: finish door accessibility criteria
     
@@ -37,9 +38,8 @@ def check_doors(ifc_file,door_width_mm=900,handicap_clear_mm= 1000):
 
     for door in doors:
         handicap_accessible = ifcopenshell.util.element.get_psets(door).get("HandicapAccessible")
-        min_width = door_width_mm #* unitscale #TODO:convert project units to metres
-
-        #util.get_object_placement_info(ifc_file,door)
+        min_width = door_width_m / unitscale 
+        handicap_clear= handicap_clear_m / unitscale
 
         origin,axis,direction,problem = util.get_object_placement_info(ifc_file,door)
 
@@ -60,14 +60,14 @@ def check_doors(ifc_file,door_width_mm=900,handicap_clear_mm= 1000):
             continue
 
         else:
-            bbox = util.get_box3d(origin,axis,direction,door.OverallWidth,handicap_clear_mm,door.OverallHeight)
-            print(bbox)
+            bbox = util.get_box3d(origin,axis,direction,door.OverallWidth,handicap_clear,door.OverallHeight)
+            #print(bbox)
             doors_ok.append([util.get_id(door),door.Name,"OK"])
 
     return doors,doors_major,doors_minor,doors_ok
 
 
-def check_floors(ifc_file,floor_height_mm=150):
+def check_floors(ifc_file,floor_height_m=0.15):
     """
 	Check the floors in the given IFC file and return the floors that have major deviations, minor deviations, and those that are okay.
 	
@@ -87,7 +87,7 @@ def check_floors(ifc_file,floor_height_mm=150):
     units = util.get_project_units(ifc_file)[0]
     unitscale = util.get_project_units(ifc_file)[1]
 
-    floor_height = floor_height_mm #* unitscale #TODO:convert project units to metres
+    floor_height = floor_height_m/unitscale 
 
     print (f"Floor Height Difference to be checked= {floor_height} {units}")
 
@@ -138,7 +138,9 @@ def check_floors(ifc_file,floor_height_mm=150):
     return floors_f,floors_major,floors_minor,floors_ok
     
     
-    
+
+def check_toilets(ifc_file,wc_height_m=1,grabbar_height_m=1,sink_height_m=1):
+    pass
     
     
 

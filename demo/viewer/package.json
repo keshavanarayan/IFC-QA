@@ -1,0 +1,23 @@
+{
+  "name": "ifcviewer",
+  "version": "0.0.1",
+  "description": "ifcviewer linked to validator",
+  "main": "viewer.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c ./rollup.config.js",
+    "watch": "rollup -c -w ./rollup.config.js",
+    "start": "serve"
+  },
+  "author": "Keshava Narayan",
+  "license": "None",
+  "dependencies": {
+    "openbim-components": "^1.4.15",
+    "three": "^0.160.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "rollup": "^4.13.0"
+  }
+}

@@ -191,29 +191,69 @@ def get_storey_wrt_element(ifc_file):
     Returns:
     - element_to_storey: A dictionary mapping each element to its containing structure (storey).
     """
-    # Get all instances of IfcRelContainedInSpatialStructure
-    rel_contained = ifc_file.by_type("IfcRelContainedInSpatialStructure")
+
+    storeys = ifc_file.by_type("IfcBuildingStorey")
+
 
     # Create a dictionary to map elements to their containing structure (storey)
     element_to_storey = {}
 
     # Iterate through each RelContainedInSpatialStructure relationship
+
+    for storey in storeys:
+        rel_contained = storey.ContainsElements
+        for rel in rel_contained:
+            if rel.RelatedElements:
+                for elem in rel.RelatedElements:
+                    element_to_storey[elem] = rel.RelatingStructure
+
+    """
+    # Get all instances of IfcRelContainedInSpatialStructure
+    #rel_contained = ifc_file.by_type("IfcRelContainedInSpatialStructure")
+
     for rel in rel_contained:
         if rel.RelatedElements:
             for elem in rel.RelatedElements:
                 #element_to_storey[elem] = rel.RelatingStructure.Name
                 #element_to_storey[elem] = rel.RelatingStructure.GlobalId
                 element_to_storey[elem] = rel.RelatingStructure
+    """
     
     return element_to_storey
 
 def get_storey_of_element(ifc_file,element):
+    """
+    Get the storey of the given element in the IFC file.
+
+    Args:
+        ifc_file: The IFC file containing the element.
+        element: The element to get the storey of.
+
+    Returns:
+        The storey of the given element.
+    """
     storeys = get_storey_wrt_element(ifc_file)
 
     for each in storeys:
         if get_id(each) == get_id(element):
             return storeys[each]
 
+def get_elements_in_space(ifc_file,spacestring):
+    # Get all IfcSpace elements in the file
+    spaces = file.by_type("IfcSpace")
+    
+    substring = spacestring
+
+    # Iterate over the spaces and get all elements contained in each space
+    for space in spaces:
+        if substring.lower() in str(space.LongName).lower():
+            rel_contained = space.ContainsElements
+            for rel in rel_contained:
+                if rel.RelatedElements:
+                    print (f"-----------{space.LongName}------------")
+                    for elem in rel.RelatedElements:
+                        print(elem.Name)
+    
 
 
 def get_project_units(ifc_file):
@@ -332,8 +372,6 @@ def get_bounding_box_height(element,schema):
                 case 'Clipping':
                     if schema =="IFC2X3":
                         return shape.FirstOperand.Depth
-                        print(shape.FirstOperand)
-                        continue
                 case 'Brep':
                     return get_brep_height(shape)
                 case _:
