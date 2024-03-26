@@ -49,7 +49,7 @@ def main():
 
         with tab1:
             
-            with st.expander("Walls Check", expanded=False):
+            with st.expander("Walls Check", expanded=True):
                 walls, walls_major, walls_minor, walls_ok = qc.check_walls(ifc)
 
                 st.header(f"Walls in file : {len(walls)}")
