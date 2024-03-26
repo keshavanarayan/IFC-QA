@@ -1,9 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize
-import pygad
-
-pygad.GA()
 
 def generate_random_rectangle():
     x = np.random.rand(2)  # Random x-coordinates
@@ -55,14 +52,9 @@ def constraint4(r):
     cx = (min_x + max_x) / 2  # x-coordinate of the center of the bounding rectangle
     cy = (min_y + max_y) / 2  # y-coordinate of the center of the bounding rectangle
     if is_circle_inside_rectangles(cx, cy, r, rect_coords):
-        print("no intersection")
-        return 10  # Constraint satisfied if circle doesn't intersect with any rectangle
+        return 1  # Constraint satisfied if circle doesn't intersect with any rectangle
     else:
-        print("intersection")
-        return -100  # Constraint violated if circle intersects with any rectangle
-
-
-
+        return -1000000000  # Constraint violated if circle intersects with any rectangle
 
 # Number of rectangles to generate
 num_rectangles = 5
@@ -92,16 +84,14 @@ ax.add_patch(bounding_rect_patch)
 # Set up constraints for optimization
 constraints = [{'type': 'ineq', 'fun': constraint1},  # Radius must be positive
                {'type': 'ineq', 'fun': constraint2},  # Circle must fit in x-direction
-               {'type': 'ineq', 'fun': constraint3}]  # Circle must fit in y-direction
-
-# Add the new constraint to the list of constraints
-constraints.append({'type': 'ineq', 'fun': constraint4})
+               {'type': 'ineq', 'fun': constraint3},  # Circle must fit in y-direction
+               {'type': 'ineq', 'fun': constraint4}]  # Circle must not intersect with rectangles
 
 # Find the largest circle radius
 initial_guess = min(bounding_rect[2], bounding_rect[3]) / 4
 result = minimize(objective, initial_guess, constraints=constraints, method='SLSQP')
 
-print (result)
+print(result)
 
 # Plot the largest circle
 largest_radius = result.x

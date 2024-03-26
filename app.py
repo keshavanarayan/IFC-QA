@@ -144,8 +144,6 @@ def main():
                 ada.check_corridors(ifc)
 
                 
-                
-            
 
                 
 
