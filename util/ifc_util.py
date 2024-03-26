@@ -238,11 +238,23 @@ def get_storey_of_element(ifc_file,element):
         if get_id(each) == get_id(element):
             return storeys[each]
 
+
+
 def get_elements_in_space(ifc_file,spacestring):
+    """
+	Get all IfcSpace elements in the file and return elements contained in each space.
+	
+	:param ifc_file: The Ifc file to search for IfcSpace elements
+	:param spacestring: The substring to search for in space names
+	:return: A dictionary of elements contained in each IfcSpace
+	"""
+
     # Get all IfcSpace elements in the file
-    spaces = file.by_type("IfcSpace")
+    spaces = ifc_file.by_type("IfcSpace")
     
     substring = spacestring
+
+    elements_in_spaces ={}
 
     # Iterate over the spaces and get all elements contained in each space
     for space in spaces:
@@ -252,8 +264,25 @@ def get_elements_in_space(ifc_file,spacestring):
                 if rel.RelatedElements:
                     print (f"-----------{space.LongName}------------")
                     for elem in rel.RelatedElements:
-                        print(elem.Name)
+                        elements_in_spaces[elem] = space
+                        #print(elem.Name)
     
+    return elements_in_spaces
+    
+from collections import defaultdict
+
+def get_elements_with_same_values(dictionary):
+    """
+    Generate a dictionary where keys are unique values from the input dictionary and the values are lists of keys from the input dictionary that have the same value.
+    
+    :param dictionary: A dictionary to process.
+    :return: A dictionary with values as keys and lists of keys from the input dictionary as values.
+    """
+    grouped_elements = defaultdict(list)
+    for key, value in dictionary.items():
+        grouped_elements[value].append(key)
+    return grouped_elements
+
 
 
 def get_project_units(ifc_file):
@@ -284,24 +313,6 @@ def get_project_units(ifc_file):
     else:
         return "(units)"
     """
-
-#TODO:complete unit conversion to metres
-
-def convert_to_m(ifc_file,unit):
-    """
-	Converts a given unit to METRE using project units from the provided ifc_file.
-	
-	:param ifc_file: The ifc file containing project units information.
-	:param unit: The unit to be converted.
-	:return: The unit converted to METRE.
-	"""
-
-    prefix = get_project_units(ifc_file)[2]
-    suffix = get_project_units(ifc_file)[3]
-
-    converted_unit = ifcopenshell.util.unit.convert(unit,prefix,suffix,None,"METRE")
-
-    return converted_unit
 
 def get_id(element):
     """

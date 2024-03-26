@@ -25,7 +25,7 @@ def check_doors(ifc_file,door_width_m=0.9,handicap_clear_m=1):
     - doors_ok: List of doors that meet the accessibility criteria.
     
     """
-    #TODO: finish door accessibility criteria
+    #TODO: finish door bbox accessibility criteria
     
     doors = ifc_file.by_type("IfcDoor")
     doors_major = []
@@ -79,6 +79,10 @@ def check_floors(ifc_file,floor_height_m=0.15):
 	:rtype: tuple
 	"""
 
+    #TODO: floor finish
+    #TODO: floor bevels
+    #TODO: ramps
+
     floors_f = []
     floors_major = []
     floors_minor = []
@@ -131,16 +135,75 @@ def check_floors(ifc_file,floor_height_m=0.15):
             else:
                 for floor in floors:
                     floors_ok.append([util.get_id(floor),floor.Name,"OK"])
-            
-            
-            
 
     return floors_f,floors_major,floors_minor,floors_ok
     
+
+
+def check_toilets(ifc_file,wc_height_m=1,grabbar_height_m=1,sink_height_m=1,turning_radius_m=1):
+    """
+	Check the toilets in the given IFC file and perform various checks on them.
+
+	:param ifc_file: The path to the IFC file.
+	:type ifc_file: str
+	:param wc_height_m: The minimum height of the toilet in meters. Defaults to 1 meter.
+	:type wc_height_m: float
+	:param grabbar_height_m: The minimum height of the grab bar in meters. Defaults to 1 meter.
+	:type grabbar_height_m: float
+	:param sink_height_m: The minimum height of the sink in meters. Defaults to 1 meter.
+	:type sink_height_m: float
+	:param turning_radius_m: The minimum turning radius in meters. Defaults to 1 meter.
+	:type turning_radius_m: float
+
+	:return: A tuple containing four lists: toilets, toilets_major, toilets_minor, and toilets_ok.
+	:rtype: tuple
+
+	"""
+
+    toilets =[]
+    toilets_major=[]
+    toilets_minor=[]
+    toilets_ok=[]
+
+    spaces_dict = util.get_elements_in_space(ifc_file,"Toilet")
+
+    spaces_dict = util.get_elements_with_same_values(spaces_dict)
+
+    for storey,elements in spaces_dict.items():
+        #print(elements)
+        print (f"------------- {storey.Name} -------------")
+        for element in elements:
+            print(element.Name)
+        
+
+
+    units = util.get_project_units(ifc_file)[0]
+    unitscale = util.get_project_units(ifc_file)[1]
+
+
+    wc_height = wc_height_m/unitscale
+    grabbar_height = grabbar_height_m/unitscale
+    sink_height = sink_height_m/unitscale
+    turning_radius = turning_radius_m/unitscale
+
+
+
     
 
-def check_toilets(ifc_file,wc_height_m=1,grabbar_height_m=1,sink_height_m=1):
-    pass
+    return toilets,toilets_major,toilets_minor,toilets_ok
     
     
+def check_corridors(ifc_file,circ_names = ["corridor","lobby","circulation"],corridor_width_m=1):
+    #TODO:check corridor widths from spaces
+    spaces = ifc_file.by_type("IfcSpace")
 
+    for circ_name in circ_names:
+        for space in spaces:
+            if circ_name in str(space.LongName).lower():
+                print(space)
+            
+        
+
+    
+    
+    return

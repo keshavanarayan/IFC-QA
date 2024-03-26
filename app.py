@@ -10,6 +10,7 @@ from util import ifc_util as util
 wall_excel_data = []
 door_excel_data =[]
 floor_excel_data =[]
+toilets_excel_data =[]
 
 def main():
     st.title("DODDA Validator")
@@ -48,7 +49,7 @@ def main():
 
         with tab1:
             
-            with st.expander("Walls Check", expanded=True):
+            with st.expander("Walls Check", expanded=False):
                 walls, walls_major, walls_minor, walls_ok = qc.check_walls(ifc)
 
                 st.header(f"Walls in file : {len(walls)}")
@@ -80,7 +81,6 @@ def main():
         
         with tab2:
             with st.expander("Doors Check",expanded=True):
-                #TODO: make it unit agnostic
                 doors,doors_major,doors_minor,doors_ok = ada.check_doors(ifc)
                 st.header(f'Number of Doors in file : {len(doors)}')
 
@@ -102,9 +102,6 @@ def main():
                 st.download_button(label="Download Excel", data=download_excel(door_excel_data), file_name="door_data.xlsx", mime="application/octet-stream")
             
             with st.expander("Floors Check",expanded=True):
-                #TODO: make it unit agnostic
-                #ada.check_floors(ifc)
-                #print (f"Units : {util.convert_to_m(ifc_file,0.1)}")
 
                 
                 floors, floors_major, floors_minor, floors_ok = ada.check_floors(ifc)
@@ -121,7 +118,34 @@ def main():
                 floor_excel_data.append([table7_data,"Floors with Minor Issues"])
 
                 st.header(f"Floors with No Issues : {len(floors_ok)}")
+
+                st.download_button(label="Download Excel", data=download_excel(door_excel_data), file_name="floors_data.xlsx", mime="application/octet-stream")
+            
+            with st.expander("Toilets Check",expanded=True):
+                ada.check_toilets(ifc)
+                """
+                toilets, toilets_major, toilets_minor, toilets_ok = ada.check_toilets(ifc)
+                st.header(f'Number of Toilets in file : {len(toilets)}')
+
+                st.header(f"Toilets with Major Issues : {len(toilets_major)}")
+                table8_data = pd.DataFrame(data=toilts_major, columns=['IDs', 'Type', 'Issues'])
+                st.table(table8_data)
+                floor_excel_data.append([table8_data,"Toilets with Major Issues"])
+
+                st.header(f"Toilets with Minor Issues : {len(toilets_minor)}")
+                table9_data = pd.DataFrame(data=toilets_minor, columns=['IDs', 'Type', 'Issues'])
+                st.table(table9_data)
+                floor_excel_data.append([table9_data,"Toilets with Minor Issues"])
+
+                st.header(f"Toilets with No Issues : {len(toilets_ok)}")
+                """
+            
+            with st.expander("Corridors Check",expanded=True):
+                ada.check_corridors(ifc)
+
                 
+                
+            
 
                 
 
