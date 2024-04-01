@@ -49,7 +49,7 @@ def are_walls_vertical(ifc_file, tolerance=1e-5):
     for wall in walls:
         direction = util.get_extrusion_direction(wall,ifc_file.schema)
         if direction =="Brep":
-            non_vertical_walls.append([util.get_id(wall),wall.Name,"Wall is modelled in place (can be ignored if intentional)"])
+            non_vertical_walls.append([util.get_id(wall),wall.Name,"Wall is modelled in place (can be ignored if intentional)","❌"])
             """
             #TODO:check if wall has axis, then ignore, else add to list
             origin,axis,direction,problem = util.get_object_placement_info(ifc_file,wall)
@@ -108,22 +108,23 @@ def check_walls(ifc_file):
             # wall_height = get_bounding_box_height(wall)
             wall_height = util.get_bounding_box_height(wall,ifc_file.schema)
             if wall_height is None:
-                print(f"Warning: Wall {util.get_id(wall)} height not calculatable")
-                print(wall.Representation.Representations)
-                walls_major.append([util.get_id(wall),wall.Name,"Wall height not calculatable"])
+                #print(f"Warning: Wall {util.get_id(wall)} height not calculatable")
+                #print(wall.Representation.Representations)
+                walls_major.append([util.get_id(wall),wall.Name,"Wall height not calculatable","❌"])
+
                 continue
         
         # Find the corresponding storey
         if current_storey is None :
             #print(f"Warning: Could not find corresponding storey for wall {get_id(wall)}")
-            walls_major.append([util.get_id(wall),wall.Name,"Could not find corresponding storey for wall"])
+            walls_major.append([util.get_id(wall),wall.Name,"Could not find corresponding storey for wall","❌"])
             continue
 
         current_storey_index = storeys.index(current_storey)
         if current_storey_index == len(storeys) - 1:
             #storey_height = calculate_storey_height(storeys[current_storey_index])
             #print (f"Wall {get_id(wall)} is {wall_height} {units} tall. It is in the highest level")
-            walls_ok.append([util.get_id(wall),wall.Name,"OK"])
+            walls_ok.append([util.get_id(wall),wall.Name,"OK","✅"])
         else:
             next_storey = storeys[current_storey_index+1]
             storey_height = next_storey.Elevation - current_storey.Elevation 
@@ -131,10 +132,10 @@ def check_walls(ifc_file):
         if wall_height > storey_height:
             #print(f"Wall {wall.GlobalId} is taller than or equal to the corresponding storey height.")
             #print (f"Wall {get_id(wall)} is {wall_height} {units} tall. The corresponding storey height is {storey_height} {units}")
-            walls_minor.append([util.get_id(wall),wall.Name,f"Reduce height by { wall_height - storey_height} {units}"])
+            walls_minor.append([util.get_id(wall),wall.Name,f"Reduce height by { wall_height - storey_height} {units}","❌"])
             all_walls_shorter = False
         else:
-            walls_ok.append([util.get_id(wall),wall.Name,"OK"])
+            walls_ok.append([util.get_id(wall),wall.Name,"OK","✅"])
         
     """
     if all_walls_shorter:

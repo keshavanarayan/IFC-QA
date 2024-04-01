@@ -56,13 +56,13 @@ def check_doors(ifc_file,door_width_m=0.9,handicap_clear_m=1):
             continue"""
 
         if problem:
-            doors_major.append([util.get_id(door),door.Name,f"Door {door.Name} with id {util.get_id(door)} does not have transformation attached to it"])
+            #doors_major.append([util.get_id(door),door.Name,f"Door {door.Name} with id {util.get_id(door)} does not have transformation attached to it","❌"])
             continue
 
         else:
             bbox = util.get_box3d(origin,axis,direction,door.OverallWidth,handicap_clear,door.OverallHeight)
             #print(bbox)
-            doors_ok.append([util.get_id(door),door.Name,"OK"])
+            doors_ok.append([util.get_id(door),door.Name,"OK","✅"])
 
     return doors,doors_major,doors_minor,doors_ok
 
@@ -118,7 +118,7 @@ def check_floors(ifc_file,floor_height_m=0.15):
                     #print(util.get_top_elevation(slab))
                     floors.append(slab)
                 else:
-                    floors_minor.append([util.get_id(slab),slab.Name,f"Remove Sunscreen from Slabs with id {util.get_id(slab)} in {storey.Name}"])
+                    floors_minor.append([util.get_id(slab),slab.Name,f"Remove Sunscreen from Slabs with id {util.get_id(slab)} in {storey.Name}","❌"])
             
             
             deviations = util.find_deviations(temp,floor_height)
@@ -134,7 +134,7 @@ def check_floors(ifc_file,floor_height_m=0.15):
                         floors_major.append([util.get_id(floors[index]),floors[index].Name,f"Change height by {floor_height_average - dev} {units} in {storey.Name}"])
             else:
                 for floor in floors:
-                    floors_ok.append([util.get_id(floor),floor.Name,"OK"])
+                    floors_ok.append([util.get_id(floor),floor.Name,"OK","✅"])
 
     return floors_f,floors_major,floors_minor,floors_ok
     
@@ -186,6 +186,8 @@ def check_toilets(ifc_file,wc_height_m=1,grabbar_height_m=1,sink_height_m=1,turn
     sink_height = sink_height_m/unitscale
     turning_radius = turning_radius_m/unitscale
 
+
+    
 
 
     
