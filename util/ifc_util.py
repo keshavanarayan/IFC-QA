@@ -262,7 +262,7 @@ def get_elements_in_space(ifc_file,spacestring):
             rel_contained = space.ContainsElements
             for rel in rel_contained:
                 if rel.RelatedElements:
-                    print (f"-----------{space.LongName}------------")
+                    #print (f"-----------{space.LongName}------------")
                     for elem in rel.RelatedElements:
                         elements_in_spaces[elem] = space
                         #print(elem.Name)
@@ -294,17 +294,19 @@ def get_project_units(ifc_file):
     unit_text = ifcopenshell.util.unit.get_project_unit(ifc_file,"LENGTHUNIT")
     unit_scale = ifcopenshell.util.unit.calculate_unit_scale(ifc_file)
 
-    prefix = unit_text.Prefix
+    if hasattr(unit_text, 'Prefix'):
+        prefix = unit_text.Prefix 
+    else:
+        prefix = ""
+
     suffix = unit_text.Name
 
-    if prefix:
-        unit = unit_text.Prefix+unit_text.Name
-    else:
-        unit = unit_text.Name
+    unit = prefix+suffix
+
 
     #return dir(unit_scale)
     #return unit_scale.Prefix,unit_scale.Name
-    return unit , unit_scale,prefix,suffix
+    return unit , unit_scale
     """
     if unit_scale==0.001:
         return "mm"

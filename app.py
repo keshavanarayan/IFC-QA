@@ -18,7 +18,7 @@ qc_data =[]
 
 
 def main():
-    st.title("DODDA Validator")
+    st.title("DODDA BIM Validator")
     #st.write("Upload your IFC file below:")
 
     st.sidebar.header("Upload your IFC file below:")
@@ -45,23 +45,19 @@ def main():
         project_data = pd.DataFrame(data=storeys, columns=['Storey Name', 'Storey Height'])
         st.sidebar.table(project_data)
 
-
-
         # TODO: add tolerance in all qc+ ada functions
         tolerance = st.sidebar.slider("Tolerance in metres", 0.0, 1.0)
         
 
 
         with tab1:
-        
+            
             walls, walls_major, walls_minor, walls_ok = qc.check_walls(ifc)
 
             st.header(f"Total Walls in file : {len(walls)}")
 
-            #print ([len(walls_major),len(walls_minor),len(walls_ok)])
-
             #print no. of issues as table
-            st.table(pd.DataFrame(data=np.array([len(walls_major)+len(walls_minor),len(walls_ok)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
+            st.table(pd.DataFrame(data=np.array([len(walls_ok),len(walls_major)+len(walls_minor)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
             
             table1_data = pd.DataFrame(data=walls_major, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
             table2_data = pd.DataFrame(data=walls_minor, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
@@ -80,7 +76,8 @@ def main():
             st.download_button(label="Download Best Practices Issues as Excel", data=download_excel(qc_data), file_name="qc_data.xlsx", mime="application/octet-stream")
             #st.download_button(label="Download Best Practices Conventions", data=download_excel(qc_data), file_name="qc_data.xlsx", mime="application/octet-stream")
 
-        st.divider()
+        st.divider()    
+        
 
         
         with tab2:
@@ -91,7 +88,7 @@ def main():
                 st.header(f'Number of Doors in file : {len(doors)}')
 
                 #print no. of issues as table
-                st.table(pd.DataFrame(data=np.array([len(walls_major)+len(walls_minor),len(walls_ok)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
+                st.table(pd.DataFrame(data=np.array([len(doors_ok),len(doors_major)+len(doors_minor)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
 
                 table4_data = pd.DataFrame(data=doors_major, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
                 table5_data = pd.DataFrame(data=doors_minor, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
@@ -110,6 +107,9 @@ def main():
                 floors, floors_major, floors_minor, floors_ok = ada.check_floors(ifc)
                 st.header(f'Number of Floors in file : {len(floors)}')
 
+                #print no. of issues as table
+                st.table(pd.DataFrame(data=np.array([len(floors_ok),len(floors_major)+len(floors_minor)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
+
 
                 table6_data = pd.DataFrame(data=floors_major, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
                 table7_data = pd.DataFrame(data=floors_minor, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
@@ -125,28 +125,42 @@ def main():
                 
                 #------------TOILETS------------#
 
-                #ada.check_toilets(ifc)
-                """
-                toilets, toilets_major, toilets_minor, toilets_ok = ada.check_toilets(ifc)
+                #TODO:finish toilets check
+
+                toilets = ada.check_toilets(ifc)
                 st.header(f'Number of Toilets in file : {len(toilets)}')
 
-                st.header(f"Toilets with Major Issues : {len(toilets_major)}")
-                table8_data = pd.DataFrame(data=toilts_major, columns=['IDs', 'Type', 'Issues'])
-                st.table(table8_data)
-                floor_excel_data.append([table8_data,"Toilets with Major Issues"])
+                
+                #toilets, toilets_major, toilets_minor, toilets_ok = ada.check_toilets(ifc)
+                #st.header(f'Number of Toilets in file : {len(toilets)}')
 
-                st.header(f"Toilets with Minor Issues : {len(toilets_minor)}")
-                table9_data = pd.DataFrame(data=toilets_minor, columns=['IDs', 'Type', 'Issues'])
-                st.table(table9_data)
-                floor_excel_data.append([table9_data,"Toilets with Minor Issues"])
+                #print no. of issues as table
+                #st.table(pd.DataFrame(data=np.array([len(toilets_ok),len(toilets_major)+len(toilets_minor)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
 
-                st.header(f"Toilets with No Issues : {len(toilets_ok)}")
+                
+                #st.header(f"Toilets with Major Issues : {len(toilets_major)}")
+                #table8_data = pd.DataFrame(data=toilts_major, columns=['IDs', 'Type', 'Issues'])
+                #st.table(table8_data)
+                #floor_excel_data.append([table8_data,"Toilets with Major Issues"])
 
-                """
+                #st.header(f"Toilets with Minor Issues : {len(toilets_minor)}")
+                #table9_data = pd.DataFrame(data=toilets_minor, columns=['IDs', 'Type', 'Issues'])
+                #st.table(table9_data)
+                #floor_excel_data.append([table9_data,"Toilets with Minor Issues"])
+
+                #st.header(f"Toilets with No Issues : {len(toilets_ok)}")
+
 
                 #------------CORRIDORS------------#
 
-                #ada.check_corridors(ifc)
+                #TODO:finish corridors check
+
+                #corridors, corridors_major, corridors_minor, corridors_ok = ada.check_corridors(ifc)
+                corridors = ada.check_corridors(ifc)
+                st.header(f'Number of Corridors in file : {len(corridors)}')
+
+                #print no. of issues as table
+                #st.table(pd.DataFrame(data=np.array([len(corridors_ok),len(corridors_major)+len(corridors_minor)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
 
                 # Download button for exporting data as Excel
                 st.download_button(label="Download Excel", data=download_excel(ada_data), file_name="ada_data.xlsx", mime="application/octet-stream")

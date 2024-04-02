@@ -165,15 +165,20 @@ def check_toilets(ifc_file,wc_height_m=1,grabbar_height_m=1,sink_height_m=1,turn
     toilets_minor=[]
     toilets_ok=[]
 
+
     spaces_dict = util.get_elements_in_space(ifc_file,"Toilet")
-
+    #print(spaces_dict)
     spaces_dict = util.get_elements_with_same_values(spaces_dict)
+    print(spaces_dict)
 
-    for storey,elements in spaces_dict.items():
+    for space,elements in spaces_dict.items():
         #print(elements)
-        print (f"------------- {storey.Name} -------------")
+        print (f"------------- {space.LongName} -------------")
         for element in elements:
             print(element.Name)
+            #print(dir(element))
+            
+            print((element.ObjectPlacement.RelativePlacement.Location.Coordinates[2]))
         
 
 
@@ -192,20 +197,24 @@ def check_toilets(ifc_file,wc_height_m=1,grabbar_height_m=1,sink_height_m=1,turn
 
     
 
-    return toilets,toilets_major,toilets_minor,toilets_ok
+    return toilets
     
     
 def check_corridors(ifc_file,circ_names = ["corridor","lobby","circulation"],corridor_width_m=1):
+    circulations =[]
+    circulations_major=[]
+    circulations_minor=[]
+    circulations_ok=[]
+
     #TODO:check corridor widths from spaces
     spaces = ifc_file.by_type("IfcSpace")
 
     for circ_name in circ_names:
         for space in spaces:
             if circ_name in str(space.LongName).lower():
-                print(space)
+                #print(space)
+                circulations.append(space)
             
-        
-
     
     
-    return
+    return circulations
