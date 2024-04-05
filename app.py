@@ -8,6 +8,14 @@ from util import qc_helper as qc
 from util import ada_helper as ada
 from util import ifc_util as util
 
+#from topologicpy.Topology import Topology
+#from topologicpy.Plotly import Plotly
+
+#import compas_ifc 
+#import compas_viewer as viewer
+
+
+
 wall_excel_data = []
 door_excel_data =[]
 floor_excel_data =[]
@@ -75,7 +83,7 @@ def main():
             # Download button for exporting data as Excel
             st.download_button(label="Download Best Practices Issues as Excel", data=download_excel(qc_data), file_name="qc_data.xlsx", mime="application/octet-stream")
             #st.download_button(label="Download Best Practices Conventions", data=download_excel(qc_data), file_name="qc_data.xlsx", mime="application/octet-stream")
-
+            
         st.divider()    
         
 
@@ -127,29 +135,23 @@ def main():
 
                 #TODO:finish toilets check
 
-                toilets = ada.check_toilets(ifc)
+                toilets, toilets_major, toilets_minor, toilets_ok = ada.check_toilets(ifc)
                 st.header(f'Number of Toilets in file : {len(toilets)}')
 
-                
-                #toilets, toilets_major, toilets_minor, toilets_ok = ada.check_toilets(ifc)
-                #st.header(f'Number of Toilets in file : {len(toilets)}')
 
-                #print no. of issues as table
-                #st.table(pd.DataFrame(data=np.array([len(toilets_ok),len(toilets_major)+len(toilets_minor)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
+                st.table(pd.DataFrame(data=np.array([list(toilets.values()).count(True),list(toilets.values()).count(False)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
 
-                
-                #st.header(f"Toilets with Major Issues : {len(toilets_major)}")
-                #table8_data = pd.DataFrame(data=toilts_major, columns=['IDs', 'Type', 'Issues'])
-                #st.table(table8_data)
-                #floor_excel_data.append([table8_data,"Toilets with Major Issues"])
+                table8_data = pd.DataFrame(data=toilets_major, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
+                table9_data = pd.DataFrame(data=toilets_minor, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
+                table9_1_data = pd.DataFrame(data=toilets_ok, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
 
-                #st.header(f"Toilets with Minor Issues : {len(toilets_minor)}")
-                #table9_data = pd.DataFrame(data=toilets_minor, columns=['IDs', 'Type', 'Issues'])
-                #st.table(table9_data)
-                #floor_excel_data.append([table9_data,"Toilets with Minor Issues"])
+                toilet_excel_data = pd.concat([table9_1_data,table8_data, table9_data], ignore_index=True)
 
-                #st.header(f"Toilets with No Issues : {len(toilets_ok)}")
+                with st.expander("View Toilet Equipment Details",expanded=True): st.table(toilet_excel_data)
 
+                ada_data.append([toilet_excel_data,"Toilets Check"])
+
+                st.divider()
 
                 #------------CORRIDORS------------#
 
@@ -168,6 +170,12 @@ def main():
 
         with tab3:
             st.header("Hello")
+
+            #ifc_topo = Topology.ByIFCFile(ifc)
+            #print (ifc_topo)
+            #viewer = Plotly.FigureByTopology(ifc_topo,showVertices=False)
+            #st.plotly_chart(viewer.show())
+
         
         
         
@@ -192,13 +200,11 @@ def download_excel(data):
                 table_data[0].to_excel(writer,index = False)
     
     #FIXME: write to server if needed
-    
     #with open("wall_data.xlsx", "rb") as f:
     #    data = f.read()
     #return data
 
-    
-        
+
     return buffer
 
 

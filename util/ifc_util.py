@@ -6,6 +6,7 @@ import ifcopenshell.util.constraint
 import ifcopenshell.util.unit
 import ifcopenshell.entity_instance
 import ifcopenshell.util
+import numpy as np
 
 settings = ifcopenshell.geom.settings()
 
@@ -13,7 +14,7 @@ settings.USE_PYTHON_OPENCASCADE = True
 
 #--------------------------------utils-------------------------------------------
 
-import numpy as np
+
 
 def get_box3d(origin, x_axis, extrusion_direction, length, width, height):
     """
@@ -206,18 +207,6 @@ def get_storey_wrt_element(ifc_file):
             if rel.RelatedElements:
                 for elem in rel.RelatedElements:
                     element_to_storey[elem] = rel.RelatingStructure
-
-    """
-    # Get all instances of IfcRelContainedInSpatialStructure
-    #rel_contained = ifc_file.by_type("IfcRelContainedInSpatialStructure")
-
-    for rel in rel_contained:
-        if rel.RelatedElements:
-            for elem in rel.RelatedElements:
-                #element_to_storey[elem] = rel.RelatingStructure.Name
-                #element_to_storey[elem] = rel.RelatingStructure.GlobalId
-                element_to_storey[elem] = rel.RelatingStructure
-    """
     
     return element_to_storey
 
@@ -287,10 +276,13 @@ def get_elements_with_same_values(dictionary):
 
 def get_project_units(ifc_file):
     """
-    A function that retrieves the project units from the provided ifc_file.
-    It obtains the unit text and scale, extracts the prefix and suffix from the unit text,
-    and returns a tuple containing the concatenated prefix and suffix, unit scale, prefix, and suffix.
-    """
+	Get the project units and unit scale from an IFC file.
+
+	:param ifc_file: The path to the IFC file.
+	:type ifc_file: str
+	:return: A tuple containing the unit and unit scale.
+	:rtype: tuple(str, float)
+	"""
     unit_text = ifcopenshell.util.unit.get_project_unit(ifc_file,"LENGTHUNIT")
     unit_scale = ifcopenshell.util.unit.calculate_unit_scale(ifc_file)
 
@@ -304,17 +296,7 @@ def get_project_units(ifc_file):
     unit = prefix+suffix
 
 
-    #return dir(unit_scale)
-    #return unit_scale.Prefix,unit_scale.Name
-    return unit , unit_scale
-    """
-    if unit_scale==0.001:
-        return "mm"
-    elif unit_scale==1:
-        return "m"
-    else:
-        return "(units)"
-    """
+    return unit.lower() , unit_scale
 
 def get_id(element):
     """
@@ -329,6 +311,24 @@ def get_id(element):
     #return element.GlobalId
     return ifcopenshell.entity_instance.id(element)
 
+def get_brep_vertices(brep):
+    """
+    Get the vertices of a B-Rep object.
+
+    :param brep: The B-Rep object.
+    :type brep: BRep
+    :return: The vertices of the B-Rep object.
+    :rtype: list
+    """
+    vertices = []
+    for face in brep.Outer.CfsFaces:
+        bounds = face.Bounds
+        for bound in bounds:
+            polygon = bound.Bound.Polygon
+            for vertex in polygon:
+                #print(vertex.Coordinates)
+                vertices.append(vertex)
+    return vertices
 
 def get_brep_height(brep):
     """
@@ -340,18 +340,17 @@ def get_brep_height(brep):
 	:rtype: float
 	"""
 
-    vertices = []
-    for face in brep.Outer.CfsFaces:
-        bounds = face.Bounds
-        for bound in bounds:
-            polygon = bound.Bound.Polygon
-            for vertex in polygon:
-                #print(vertex.Coordinates)
-                vertices.append(vertex)
+    vertices = get_brep_vertices(brep)
 
     ##print(brep.Outer.CfsFaces[0].Bounds[0].Bound.Polygon[0].Coordinates)
     return max(vertices).Coordinates[2]-min(vertices).Coordinates[2]
 
+def get_overall_bbox_dims(vertices_list):
+    vertices = np.concatenate(vertices_list)
+    min_coords = np.min(vertices, axis=0)
+    max_coords = np.max(vertices, axis=0)
+
+    return max_coords - min_coords
 
 #TODO: find solution if it is a Boolean Clipping result
 def get_bounding_box_height(element,schema):
@@ -387,8 +386,18 @@ def get_bounding_box_height(element,schema):
                         return shape.FirstOperand.Depth
                 case 'Brep':
                     return get_brep_height(shape)
+                case 'MappedRepresentation':
+                    breps = shape.MappingSource.MappedRepresentation.Items
+                    vertices = []
+                    for brep in breps:
+                        vertices.append(get_brep_vertices(brep))
+
+                    height = get_overall_bbox_dims(vertices)[0][2]
+                    #print (height)
+                    return height
                 case _:
-                    #print (f"EXTRA PROBLEM - {shape}")
+                    print (f"EXTRA PROBLEM - {shape}")
+
                     continue
 
 def get_swept_area(element,schema):

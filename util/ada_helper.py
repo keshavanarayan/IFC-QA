@@ -140,7 +140,7 @@ def check_floors(ifc_file,floor_height_m=0.15):
     
 
 
-def check_toilets(ifc_file,wc_height_m=1,grabbar_height_m=1,sink_height_m=1,turning_radius_m=1):
+def check_toilets(ifc_file,wc_height_m=0.4572,grabbar_height_m=0.8382,sink_height_m=0.8636,turning_radius_m=1):
     """
 	Check the toilets in the given IFC file and perform various checks on them.
 
@@ -160,26 +160,68 @@ def check_toilets(ifc_file,wc_height_m=1,grabbar_height_m=1,sink_height_m=1,turn
 
 	"""
 
-    toilets =[]
+    toilets = {}
     toilets_major=[]
     toilets_minor=[]
     toilets_ok=[]
+
+    units = util.get_project_units(ifc_file)[0]
+    unitscale = util.get_project_units(ifc_file)[1]
+
+    bar_height = grabbar_height_m/unitscale
+    wc_height = wc_height_m/unitscale
+    sink_height = sink_height_m/unitscale
+
 
 
     spaces_dict = util.get_elements_in_space(ifc_file,"Toilet")
     #print(spaces_dict)
     spaces_dict = util.get_elements_with_same_values(spaces_dict)
-    print(spaces_dict)
+    #print(spaces_dict)
 
     for space,elements in spaces_dict.items():
         #print(elements)
-        print (f"------------- {space.LongName} -------------")
-        for element in elements:
-            print(element.Name)
-            #print(dir(element))
-            
-            print((element.ObjectPlacement.RelativePlacement.Location.Coordinates[2]))
+        #print (f"------------- {space.LongName} -------------")
+
+        #
+        toilets[space] = True
         
+        for element in elements:
+            element_ok = True
+            #print(element.Name)
+            #print (ifcopenshell.util.element.get_container(element))
+            if "grab" in element.Name.lower():
+                bar_ht_given = element.ObjectPlacement.RelativePlacement.Location.Coordinates[2]
+                if bar_ht_given < bar_height: 
+                    toilets_minor.append([util.get_id(element),element.Name,f"Change grab bar height to {bar_height} {units}. Now {bar_ht_given} {units}","❌"])
+                    element_issues = True
+                else:
+                    toilets_ok.append([util.get_id(element),element.Name,"OK","✅"])
+                #print((element.ObjectPlacement.RelativePlacement.Location.Coordinates[2], util.get_project_units(ifc_file)[0]))
+
+            if "lavatory" in element.Name.lower():
+                sink_ht_given = element.ObjectPlacement.RelativePlacement.Location.Coordinates[2]
+                if sink_ht_given < sink_height: 
+                    toilets_minor.append([util.get_id(element),element.Name,f"Change sink height to {sink_height} {units}. Now {sink_ht_given} {units}","❌"])
+                    element_issues = True
+                else:
+                    toilets_ok.append([util.get_id(element),element.Name,"OK","✅"])
+                #print((element.ObjectPlacement.RelativePlacement.Location.Coordinates[2], util.get_project_units(ifc_file)[0]))
+                
+            if "flush" in element.Name.lower():
+                wc_ht_given = element.ObjectPlacement.RelativePlacement.Location.Coordinates[2]
+                if wc_ht_given < wc_height:
+                    toilets_minor.append([util.get_id(element),element.Name,f"Change wc height to {wc_height} {units}. Now {wc_ht_given} {units}","❌"])
+                    element_issues = True
+                else:
+                    toilets_ok.append([util.get_id(element),element.Name,"OK","✅"])
+                #print((element.ObjectPlacement.RelativePlacement.Location.Coordinates[2], util.get_project_units(ifc_file)[0]))
+                
+            
+            if element_issues: toilets[space] = False
+
+                
+
 
 
     units = util.get_project_units(ifc_file)[0]
@@ -192,15 +234,23 @@ def check_toilets(ifc_file,wc_height_m=1,grabbar_height_m=1,sink_height_m=1,turn
     turning_radius = turning_radius_m/unitscale
 
 
-    
 
-
-    
-
-    return toilets
+    return toilets,toilets_major,toilets_minor,toilets_ok
     
     
 def check_corridors(ifc_file,circ_names = ["corridor","lobby","circulation"],corridor_width_m=1):
+    """
+    A function that checks corridor widths from spaces in an IFC file.
+
+    Parameters:
+    - ifc_file: The IFC file to extract spaces from.
+    - circ_names: A list of names to identify corridor spaces (default: ["corridor", "lobby", "circulation"]).
+    - corridor_width_m: The width of the corridor in meters (default: 1).
+
+    Returns:
+    - circulations: A list of spaces identified as corridors.
+    """
+
     circulations =[]
     circulations_major=[]
     circulations_minor=[]
@@ -214,6 +264,10 @@ def check_corridors(ifc_file,circ_names = ["corridor","lobby","circulation"],cor
             if circ_name in str(space.LongName).lower():
                 #print(space)
                 circulations.append(space)
+                #print (dir(space.ContainsElements))
+                #print (dir(space.Representation))
+                #print ((space.Representation.ShapeOfProduct))
+                print((space.Representation.Representations[0].Items[0].SweptArea.OuterCurve.Points))
             
     
     
