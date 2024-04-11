@@ -4,7 +4,10 @@
     "ElevationDifference": "1/48",
     "Slope": "1/12",
     "MinWidth": 1.5,
-    "MinLength": 3
+    "MinLength": 3,
+    "Carpet": {
+      "Height": "1/2"
+    }
   },
   "IfcDoor": {
     "OverallWidth": 3,
@@ -13,7 +16,7 @@
     "HandleHeight": 3
   },
   "IfcSpace": {
-    "TurningRadius": 1,
+    "TurningRadius": 2,
     "Toilet": {
       "Lavatory": {
         "Height": 3,
@@ -31,7 +34,8 @@
     "Circulation": {
       "ClearWidth": 10,
       "ClearHeight": 10,
-      "WallProjectionDepth": 0.5
+      "ProtrusionLimit": {}
     }
-  }
+  },
+  "IfcFurnishingElement": {}
 }
