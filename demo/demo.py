@@ -1,59 +1,50 @@
-import ifcopenshell.util.element
+import numpy as np
+import plotly.graph_objs as go
+from shapely.geometry import Polygon, Point
+from shapely.ops import unary_union
 
-#ifc_file_path = 'models/rac_advanced_sample_project.ifc'
-ifc_file_path = 'ifc\AC2Ø-Institute-Var-2.ifc'
-#ifc_file_path = 'models\House.ifc'
-#ifc_file_path = 'models\example project location.ifc'
+def generate_random_points_within_polygon(polygon, num_points):
+    min_x, min_y, max_x, max_y = polygon.bounds
 
-model = ifcopenshell.open(ifc_file_path)
+    random_points = []
+    while len(random_points) < num_points:
+        point = Point(np.random.uniform(min_x, max_x), np.random.uniform(min_y, max_y))
+        if polygon.contains(point):
+            random_points.append([point.x, point.y])
 
-for storey in model.by_type("IfcBuildingStorey"):
-    print(f"Elevation = {storey.Elevation}")
-    elements = ifcopenshell.util.element.get_decomposition(storey)
-    print(f"There are {len(elements)} elements located on storey {storey.Name}")
+    return np.array(random_points)
 
-    bounding_dim = 0
-    max_dim = 0
-    
-    for element in elements:
-        if (element.is_a("IfcStair")):
-            continue
-        geom_items = element.Representation.Representations
-        #print(element.Representation.Representations)
-        #print (geom_items)
-        
-        if not geom_items:
-            continue  # No geometry found
+# Example polyline
+polyline = np.array([[1, 1], [3, 6], [7, 8], [10, 4], [1, 1]])  # Close the polyline with the first point
 
-        for geom_item in geom_items:
-            shape = geom_item.Items[0]
-            
-            if geom_item.is_a('IfcShapeRepresentation') and shape:
-                representation_type = geom_item.RepresentationType
-                #print (representation_type)
-                if representation_type == 'BoundingBox':
-                    if shape.ZDim > max_dim:
-                        max_dim = shape.ZDim
-                elif representation_type == 'SweptSolid':
-                    if shape.Depth >max_dim:
-                        max_dim = shape.Depth
-                elif representation_type == 'Clipping':
-                    continue
-                elif representation_type == 'Curve2D':
-                    #return geom_item.Items[0].Depth
-                    #print(shape)
-                    continue
-                elif representation_type == 'Brep':
-                    #return geom_item.Items[0].Depth
-                    #print(shape)
-                    continue
+# Create a shapely polygon from the polyline
+polygon = Polygon(polyline)
 
-                else:
-                    continue
-                    #print (f"EXTRA PROBLEM - {geom_item.Items[0]}")
-        
-            if max_dim>bounding_dim:
-                bounding_dim = max_dim
-    print (f"Bounding Dim = {bounding_dim}")
-    print ("..")
-        
+# Compute the convex hull
+convex_hull = polygon.convex_hull
+
+# Offset the convex hull by 1 unit
+offset_convex_hull = convex_hull.buffer(1)
+
+# Generate random points within the offset convex hull
+num_points = 100
+random_points = generate_random_points_within_polygon(offset_convex_hull, num_points)
+
+# Plot the polyline, convex hull, and random points
+fig = go.Figure()
+
+# Add polyline trace
+fig.add_trace(go.Scatter(x=polyline[:, 0], y=polyline[:, 1], mode='lines', name='Polyline'))
+
+# Add convex hull trace
+hull_x, hull_y = offset_convex_hull.exterior.xy
+fig.add_trace(go.Scatter(x=hull_x, y=hull_y, mode='lines', name='Convex Hull'))
+
+# Add random points trace
+fig.add_trace(go.Scatter(x=random_points[:, 0], y=random_points[:, 1], mode='markers', name='Random Points'))
+
+# Set layout
+fig.update_layout(title='Polyline with Convex Hull and Random Points', xaxis_title='X', yaxis_title='Y')
+
+# Show plot
+fig.show()

@@ -1,0 +1,37 @@
+{
+  "unit": "foot",
+  "IfcSlab": {
+    "ElevationDifference": "1/48",
+    "Slope": "1/12",
+    "MinWidth": 1.5,
+    "MinLength": 3
+  },
+  "IfcDoor": {
+    "OverallWidth": 3,
+    "ClearanceX": 6,
+    "ClearanceY": 0,
+    "HandleHeight": 3
+  },
+  "IfcSpace": {
+    "TurningRadius": 1,
+    "Toilet": {
+      "Lavatory": {
+        "Height": 3,
+        "DistancefromWall": 1
+      },
+      "GrabBar": {
+        "Height": 0.5,
+        "DistancefromWall": 0.5
+      },
+      "Sink": {
+        "Height": 3,
+        "DistancefromWall": 1
+      }
+    },
+    "Circulation": {
+      "ClearWidth": 10,
+      "ClearHeight": 10,
+      "WallProjectionDepth": 0.5
+    }
+  }
+}

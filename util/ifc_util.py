@@ -396,7 +396,7 @@ def get_bounding_box_height(element,schema):
                     #print (height)
                     return height
                 case _:
-                    print (f"EXTRA PROBLEM - {shape}")
+                    #print (f"EXTRA PROBLEM - {shape}")
 
                     continue
 

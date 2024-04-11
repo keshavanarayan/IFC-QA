@@ -45,8 +45,6 @@ def check_doors(ifc_file,door_width_m=0.9,handicap_clear_m=1):
 
         #print(origin,axis,direction,problem)
 
-
-
         if door.OverallWidth < min_width:
             doors_minor.append([util.get_id(door),door.Name,f"Reduce width by {door.OverallWidth - min_width} {units}"])
             continue
@@ -194,6 +192,7 @@ def check_toilets(ifc_file,wc_height_m=0.4572,grabbar_height_m=0.8382,sink_heigh
                 bar_ht_given = element.ObjectPlacement.RelativePlacement.Location.Coordinates[2]
                 if bar_ht_given < bar_height: 
                     toilets_minor.append([util.get_id(element),element.Name,f"Change grab bar height to {bar_height} {units}. Now {bar_ht_given} {units}","❌"])
+                    
                     element_issues = True
                 else:
                     toilets_ok.append([util.get_id(element),element.Name,"OK","✅"])
@@ -212,6 +211,7 @@ def check_toilets(ifc_file,wc_height_m=0.4572,grabbar_height_m=0.8382,sink_heigh
                 wc_ht_given = element.ObjectPlacement.RelativePlacement.Location.Coordinates[2]
                 if wc_ht_given < wc_height:
                     toilets_minor.append([util.get_id(element),element.Name,f"Change wc height to {wc_height} {units}. Now {wc_ht_given} {units}","❌"])
+                    #print(dir(element))
                     element_issues = True
                 else:
                     toilets_ok.append([util.get_id(element),element.Name,"OK","✅"])
@@ -267,7 +267,7 @@ def check_corridors(ifc_file,circ_names = ["corridor","lobby","circulation"],cor
                 #print (dir(space.ContainsElements))
                 #print (dir(space.Representation))
                 #print ((space.Representation.ShapeOfProduct))
-                print((space.Representation.Representations[0].Items[0].SweptArea.OuterCurve.Points))
+                print((space.Representation.Representations[0].Items[0].SweptArea.OuterCurve.Points[0].Coordinates))
             
     
     
