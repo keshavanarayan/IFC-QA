@@ -8,14 +8,6 @@ from util import qc_helper as qc
 from util import ada_helper as ada
 from util import ifc_util as util
 
-#from topologicpy.Topology import Topology
-#from topologicpy.Plotly import Plotly
-
-#import compas_ifc 
-#import compas_viewer as viewer
-
-
-
 wall_excel_data = []
 door_excel_data =[]
 floor_excel_data =[]
@@ -55,8 +47,6 @@ def main():
 
         # TODO: add tolerance in all qc+ ada functions
         tolerance = st.sidebar.slider("Tolerance in metres", 0.0, 1.0)
-        
-
 
         with tab1:
             
@@ -87,7 +77,6 @@ def main():
         st.divider()    
         
 
-        
         with tab2:
 
                 #------------DOORS------------#
@@ -117,7 +106,6 @@ def main():
 
                 #print no. of issues as table
                 st.table(pd.DataFrame(data=np.array([len(floors_ok),len(floors_major)+len(floors_minor)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
-
 
                 table6_data = pd.DataFrame(data=floors_major, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
                 table7_data = pd.DataFrame(data=floors_minor, columns=['IDs', 'Type', 'Issues','Pass/Fail'])
@@ -155,11 +143,13 @@ def main():
 
                 #------------CORRIDORS------------#
 
+                
+
                 #TODO:finish corridors check
 
                 #corridors, corridors_major, corridors_minor, corridors_ok = ada.check_corridors(ifc)
-                corridors = ada.check_corridors(ifc)
-                st.header(f'Number of Corridors in file : {len(corridors)}')
+                #corridors = ada.check_corridors(ifc)
+                #st.header(f'Number of Corridors in file : {len(corridors)}')
 
                 #print no. of issues as table
                 #st.table(pd.DataFrame(data=np.array([len(corridors_ok),len(corridors_major)+len(corridors_minor)]).reshape(-1,2), columns=["Pass ✅","Fail ❌"]))
@@ -168,13 +158,9 @@ def main():
                 st.download_button(label="Download Excel", data=download_excel(ada_data), file_name="ada_data.xlsx", mime="application/octet-stream")
         
 
-        with tab3:
-            st.header("Hello")
+        #with tab3:
+        #    st.header("Hello")
 
-            #ifc_topo = Topology.ByIFCFile(ifc)
-            #print (ifc_topo)
-            #viewer = Plotly.FigureByTopology(ifc_topo,showVertices=False)
-            #st.plotly_chart(viewer.show())
 
         
         

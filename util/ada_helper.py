@@ -114,9 +114,13 @@ def check_floors(ifc_file,floor_height_m=0.15):
                 if "Sunscreen" not in slab.Name:
                     temp.append(util.get_top_elevation(slab))
                     #print(util.get_top_elevation(slab))
+                    util.get_floor_coordinates(slab)
                     floors.append(slab)
+                    
                 else:
-                    floors_minor.append([util.get_id(slab),slab.Name,f"Remove Sunscreen from Slabs with id {util.get_id(slab)} in {storey.Name}","❌"])
+                    floors_f.remove(slab) 
+                    #continue
+                    #floors_minor.append([util.get_id(slab),slab.Name,f"Remove Sunscreen from Slabs with id {util.get_id(slab)} in {storey.Name}","❌"])
             
             
             deviations = util.find_deviations(temp,floor_height)
@@ -124,6 +128,8 @@ def check_floors(ifc_file,floor_height_m=0.15):
             
             floor_height_average = util.find_mode(temp)
             #print(floor_height_average)
+
+            
 
             if deviations:
                 for dev in deviations:

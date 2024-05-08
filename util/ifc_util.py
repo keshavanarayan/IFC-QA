@@ -135,6 +135,18 @@ def get_elements_wrt_storey(ifc_file,categorystring):
 
 # Now slabs_by_storeys dictionary contains slabs sorted by storeys
 
+def get_floor_coordinates(floor):
+    #print (floor.Representation.Representations[0].Items[0].SweptArea.OuterCurve.is_a())
+    floor_crv = floor.Representation.Representations[0].Items[0].SweptArea.OuterCurve
+    if (str(floor_crv.is_a()) == "IfcPolyline"): 
+        print (floor_crv.Points[0])
+    else:
+        #print(floor_crv.Segments[0])
+        print(floor_crv.Segments[0].ParentCurve.Points[0])
+        #print(dir(floor_crv.Segments[0]))
+    #print (dir(floor.Representation.Representations[0].Items[0].SweptArea.OuterCurve))
+    pass
+
 
 def get_top_elevation(element):
     """
@@ -569,6 +581,7 @@ def get_object_placement_info(ifc_file,element):
     - numpy array: The axis direction ratios of the object placement.
     - numpy array: The direction ratios of the object placement.
     """
+
     problem = []
     
     if element.ObjectPlacement.RelativePlacement.Axis and element.ObjectPlacement.RelativePlacement.Location and element.ObjectPlacement.RelativePlacement.RefDirection:
